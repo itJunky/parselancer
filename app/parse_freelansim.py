@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
+
 
 from db import *
 
@@ -6,31 +10,39 @@ import urllib2
 import re
 
 from sqlalchemy.orm import sessionmaker
-session = sessionmaker(bind=engine)
+Session = sessionmaker(bind=engine)
+session = Session()
 
 from BeautifulSoup import BeautifulSoup          # Для обработки HTML
-page = urllib2.urlopen("https://freelansim.ru/tasks/")
+default_url = "https://freelansim.ru/tasks/"
+admin_url = "https://freelansim.ru/tasks?categories=admin_network,admin_servers,admin_databases,admin_design,admin_testing,admin_other"
+webdev_url = "https://freelansim.ru/tasks?categories=web_programming,web_prototyping,web_test"
+page = urllib2.urlopen(admin_url)
 soup = BeautifulSoup(page)
-
-
-# print soup.contents
 
 all_jobs = soup.findAll('article', {"class": "task task_list"})
 
 for job in all_jobs:
 
     title = job.find("div", "task__title").text
-    print title
+    print "Title:\t", title
     url = 'http://freelansim.ru'+job.find("div", "task__title").find("a").get('href')
-    print url
-    data = job.find("span", "params__published-at").text
-    print data
+    print "Url:\t", url
+    date = job.find("span", "params__published-at").text.splitlines()
+    date = str(date[0]+' '+date[1])
+    print "Date:\t", date
     price_raw = job.find("div", "task__price")
     price = price_raw.find("span", "count")
     if price:
         price = price.text
-    else:
+    else: # if not exist, find another tag
         price = price_raw.find("span", "negotiated_price").text
 
-    print price
-    raw = job.contents
+    print "Price:\t", price, "\n"
+    #raw = job.contents
+    category = 'admin'
+
+    sql = "INSERT INTO job (title, date, price, url, category) \
+            VALUES ('{}', '{}', '{}', '{}', '{}');".format(title, date, price, url, category)
+    session.execute(sql)
+    session.commit()

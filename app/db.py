@@ -13,11 +13,11 @@ class Job(Base):
     __tablename__ = 'job'
     id = Column(Integer, primary_key=True)
     title = Column(String)
-    company = Column(String)
-    city = Column(String)
-    salary = Column(String)
+    date = Column(String)
+    price = Column(String)
     url = Column(String)
     raw = Column(String)
+    category = Column(String)
 
 class User(Base):
     __tablename__ = 'users'
