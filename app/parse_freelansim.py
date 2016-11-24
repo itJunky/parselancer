@@ -20,6 +20,14 @@ webdev_url = "https://freelansim.ru/tasks?categories=web_programming,web_prototy
 page = urllib2.urlopen(admin_url)
 soup = BeautifulSoup(page)
 
+def job_exist(job_link):
+    cur = session.execute("SELECT url FROM job")
+    links = cur.fetchall()
+    # print links
+    if any(job_link in s[0] for s in links): return True
+    else: return False
+
+
 all_jobs = soup.findAll('article', {"class": "task task_list"})
 
 for job in all_jobs:
@@ -42,7 +50,9 @@ for job in all_jobs:
     #raw = job.contents
     category = 'admin'
 
-    sql = "INSERT INTO job (title, date, price, url, category) \
-            VALUES ('{}', '{}', '{}', '{}', '{}');".format(title, date, price, url, category)
-    session.execute(sql)
-    session.commit()
+    if not job_exist(url):
+        sql = "INSERT INTO job (title, date, price, url, category) \
+                VALUES ('{}', '{}', '{}', '{}', '{}');".format(title, date, price, url, category)
+        session.execute(sql)
+
+session.commit()
