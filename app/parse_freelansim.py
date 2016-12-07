@@ -5,6 +5,7 @@ sys.setdefaultencoding('utf-8')
 
 
 from db import *
+from common import job_exist
 
 import urllib2, re
 from datetime import datetime
@@ -20,14 +21,6 @@ webdev_url = "https://freelansim.ru/tasks?categories=web_programming,web_prototy
 webdis_url = "https://freelansim.ru/tasks?categories=web_design,web_html"
 dev_url = "https://freelansim.ru/tasks?categories=app_all_inclusive,app_scripts,app_bots,app_plugins,app_utilites,app_design,app_programming,app_prototyping,app_1c_dev,app_test,app_other"
 
-def job_exist(job_link):
-    cur = session.execute("SELECT url FROM job")
-    links = cur.fetchall()
-    # print links
-    if any(job_link in s[0] for s in links):
-        print '-Job in DataBase-'
-        return True
-    else: return False
 
 def parse_category(url, category):
     page = urllib2.urlopen(url)
