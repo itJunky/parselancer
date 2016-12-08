@@ -55,18 +55,23 @@ for user in users:
                                    LIMIT 3".format(category, saved_last_job_id))
         jobs = cur.fetchall()
         for job in jobs:
-            job_text = "{} <b>{}</b>".format(str(job[0]),job[1].encode('utf-8').strip()) + \
+            job_text = " {} <b>{}</b><hr>".format(str(job[0]),job[1].encode('utf-8').strip()) + \
                        "\n    🕑 {}".format(job[2]) + \
                        "\n    💰 {}".format(job[3].encode('utf-8').strip()) + \
-                       "\n    🕸 <u>{}</u>".format(job[4].encode('utf-8').strip())
+                       "\n    🕸 {}".format(job[4].strip())
 
             url = "https://api.telegram.org/bot{}/sendMessage".format(config.token)
             req = urllib2.Request(url)
             req.add_header("Accept", "application/json")
             req.add_header('User-agent', 'FreeLance Bot')
 
-            data = { 'chat_id': user_tele_id, 'disable_web_page_preview': 'true', 'parse_mode': 'HTML', 'text': job_text}
-            req.add_data(json.dumps(data))
+            data = { 'chat_id': user_tele_id,
+                     'disable_web_page_preview': 'true',
+                     'parse_mode': 'HTML',
+                     'text': job_text
+                   }
+            req.add_data(urllib.urlencode(data))
+            # req.add_data(json.dumps(data))
 
             try:
                 last_id = job[0]
