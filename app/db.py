@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine
-from sqlalchemy import Table, Column, Integer, String, MetaData, ForeignKey
+from sqlalchemy import Table, Column, Integer, String, MetaData, ForeignKey, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 
@@ -17,6 +17,7 @@ class Job(Base):
     price = Column(String)
     url = Column(String)
     raw = Column(String)
+    parse_date = Column(DateTime)
     category = Column(String)
 
 class User(Base):
@@ -25,3 +26,6 @@ class User(Base):
     name = Column(String)
     fullname = Column(String)
     password = Column(String)
+    tele_id = Column(Integer)
+    last_job = Column(Integer)
+    category = Column(String)
