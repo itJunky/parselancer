@@ -21,9 +21,9 @@ print(users)
 # У каждого пользователя
 for user in users:
     # Получить последнюю работу
-    # TODO Проверить появилась ли в его категории более новая работа
+    # Проверить появилась ли в его категории более новая работа
     username = user[1]
-    print('Jobs for ' + username)
+    print('Jobs for ' + str(username))
     print('Last job id: ' + str(user[5]))
     user_tele_id = user[4]
     saved_last_job_id = user[5]
@@ -40,9 +40,9 @@ for user in users:
         last_job_in_category = cur.fetchone()[0]
 
     if saved_last_job_id < last_job_in_category:
-        # TODO Если да, то отправить ему её
+        # Если в категории появилась новая работа, то отправить юзеру её
         if category == 'all':
-            cur = session.execute("SELECT id, title, parse_date, price, url \
+            cur = session.execute("SELECT id, title, parse_date, price, url, category \
                                    FROM job \
                                    WHERE id > {} \
                                    ORDER BY date(parse_date) \
@@ -55,7 +55,7 @@ for user in users:
                                    LIMIT 3".format(category, saved_last_job_id))
         jobs = cur.fetchall()
         for job in jobs:
-            job_text = " {} <b>{}</b><hr>".format(str(job[0]),job[1].encode('utf-8').strip()) + \
+            job_text = " {} <b>{}</b>".format(str(job[0]),job[1].encode('utf-8').strip()) + \
                        "\n    🕑 {}".format(job[2]) + \
                        "\n    💰 {}".format(job[3].encode('utf-8').strip()) + \
                        "\n    🕸 {}".format(job[4].strip())
@@ -94,6 +94,9 @@ for user in users:
                 session.commit()
             except urllib2.HTTPError, e:
                 print 'HTTP ERROR -', e
-            sleep(0.350)
+            finally:
+                session.close()
+            # pause
+            sleep(0.300)
 
 
