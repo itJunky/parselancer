@@ -82,21 +82,41 @@ def handle_freelance_dev(message):
 
 
 @bot.message_handler(commands=['subscribe_adm', 'sa'])
-def handle_freelansim_adm_subscribe(message):
+def handle_admin_subscribe(message):
     # if user doesn't exist
     if not user_exist(message.from_user.id):
-        # can add new subscription
-        user_row = User(name=message.from_user.username,
-                        tele_id=message.from_user.id,
-                        last_job=get_last_job('admin'),
-                        category='admin')
-        session.add(user_row)
-        session.commit()
-    else: # else can update existing subscription
-        sql = "UPDATE users SET last_job = '{}', category = '{}' \
-               WHERE tele_id = '{}'".format(get_last_job('admin'), 'admin', message.from_user.id)
-        session.execute(sql)
-        session.commit()
+        Subscription().add_new(message.from_user.username, message.from_user.id, 'admin', session)
+    else: # else update existing subscription
+        try:
+            Subscription().update(message.from_user.id, 'admin', session)
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+
+    output = 'Chat ID: ' + str(message.chat.id) + \
+             '\nUser ID: ' + str(message.from_user.id) + \
+             '\nNick: ' + str(message.from_user.username) + \
+             '\nLast JOB ID in this category: ' + str(get_last_job('admin')) + \
+             '\nYou subscribed on Administration category'
+    bot.send_message(message.chat.id, output)
+
+@bot.message_handler(commands=['subscribe_dev', 'sd'])
+def handle_develop_subscribe(message):
+    # if user doesn't exist
+    if not user_exist(message.from_user.id):
+        add_subscription(message.from_user.username, message.from_user.id, 'dev')
+    else: # else update existing subscription
+        try:
+            Subscription().update(message.from_user.id, 'dev', session)
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
 
     output = 'Chat ID: ' + str(message.chat.id) + \
              '\nUser ID: ' + str(message.from_user.id) + \
@@ -119,11 +139,26 @@ def user_exist(user_id):
     try:
         output = 'Checked ID: {} \
                  \nExisted User ID: {} \
-                 \n__DEBUG__ _MESSAGE_'.format(user_id, cur.fetchone()[0])
+                 \n__DEBUG__ __MESSAGE__'.format(user_id, cur.fetchone()[0])
         bot.send_message(user_id, output)
         return True
     except TypeError: # if not in DB
         return False
+class Subscription(object):
+    def add_new(self, user_name, tele_id, category, session):
+        # add new subscription
+        user_row = User(name=user_name,
+                        tele_id=tele_id,
+                        last_job=get_last_job(category),
+                        category=category)
+        session.add(user_row)
+        session.commit()
+
+    def update(self, tele_id, category, session):
+        session.query(User).\
+            filter(User.tele_id == tele_id).\
+            update({"last_job": get_last_job(category),
+                    "category": category})
 
 def get_last_job(category):
     cur = session.execute("SELECT id \
