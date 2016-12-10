@@ -43,43 +43,61 @@ def handle_freelansim(message):
 @bot.message_handler(commands=['freelansim_adm', 'fra'])
 def handle_freelansim_adm(message):
     fetch_send_jobs('freelansim', 'admin', message.chat.id)
-
-    output = 'You can subscribe for updates in this category by /subscribe_adm'
+    output = 'You can subscribe for updates in this category by /subscribe_adm \
+             \nOnly one category can be subscribed'
     bot.send_message(message.chat.id, output)
 
 
 @bot.message_handler(commands=['freelansim_webdev', 'frw'])
 def handle_freelansim_webdev(message):
     fetch_send_jobs('freelansim', 'webdev', message.chat.id)
+    output = 'You can subscribe for updates in this category by /subscribe_webdev \
+             \nOnly one category can be subscribed'
+    bot.send_message(message.chat.id, output)
 
 @bot.message_handler(commands=['freelansim_webdis', 'frwd'])
 def handle_freelansim_webdis(message):
     fetch_send_jobs('freelansim', 'webdis', message.chat.id)
+    output = 'You can subscribe for updates in this category by /subscribe_webdis \
+             \nOnly one category can be subscribed'
+    bot.send_message(message.chat.id, output)
 
 @bot.message_handler(commands=['freelansim_dev', 'frd'])
 def handle_freelansim_dev(message):
     fetch_send_jobs('freelansim', 'dev', message.chat.id)
+    output = 'You can subscribe for updates in this category by /subscribe_dev \
+         \nOnly one category can be subscribed'
+    bot.send_message(message.chat.id, output)
 
 
 @bot.message_handler(commands=['freelance_adm', 'fca'])
 def handle_freelansim_adm(message):
     fetch_send_jobs('freelance', 'admin', message.chat.id)
-
-    output = 'You can subscribe for updates in this category by /subscribe_adm'
+    output = 'You can subscribe for updates in this category by /subscribe_adm \
+             \nOnly one category can be subscribed'
     bot.send_message(message.chat.id, output)
 
 @bot.message_handler(commands=['freelance_webdev', 'fcw'])
 def handle_freelance_webdev(message):
     fetch_send_jobs('freelance', 'webdev', message.chat.id)
+    output = 'You can subscribe for updates in this category by /subscribe_webdev \
+         \nOnly one category can be subscribed'
+    bot.send_message(message.chat.id, output)
+
 
 @bot.message_handler(commands=['freelance_webdis', 'fcwd'])
 def handle_freelance_webdis(message):
     fetch_send_jobs('freelance', 'webdis', message.chat.id)
+    output = 'You can subscribe for updates in this category by /subscribe_webdis \
+         \nOnly one category can be subscribed'
+    bot.send_message(message.chat.id, output)
 
 @bot.message_handler(commands=['freelance_dev', 'fcd'])
 def handle_freelance_dev(message):
     fetch_send_jobs('freelance', 'dev', message.chat.id)
-
+    output = 'You can subscribe for updates in this category by /subscribe_dev \
+         \nOnly one category can be subscribed'
+    bot.send_message(message.chat.id, output)
 
 @bot.message_handler(commands=['subscribe_adm', 'sa'])
 def handle_admin_subscribe(message):
@@ -121,8 +139,52 @@ def handle_develop_subscribe(message):
     output = 'Chat ID: ' + str(message.chat.id) + \
              '\nUser ID: ' + str(message.from_user.id) + \
              '\nNick: ' + str(message.from_user.username) + \
-             '\nLast JOB ID in this category: ' + str(get_last_job('admin')) + \
-             '\nYou subscribed on Administration category'
+             '\nLast JOB ID in this category: ' + str(get_last_job('dev')) + \
+             '\nYou subscribed on Development category'
+    bot.send_message(message.chat.id, output)
+
+@bot.message_handler(commands=['subscribe_webdev', 'swd'])
+def handle_develop_subscribe(message):
+    # if user doesn't exist
+    if not user_exist(message.from_user.id):
+        add_subscription(message.from_user.username, message.from_user.id, 'webdev')
+    else: # else update existing subscription
+        try:
+            Subscription().update(message.from_user.id, 'webdev', session)
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+
+    output = 'Chat ID: ' + str(message.chat.id) + \
+             '\nUser ID: ' + str(message.from_user.id) + \
+             '\nNick: ' + str(message.from_user.username) + \
+             '\nLast JOB ID in this category: ' + str(get_last_job('webdev')) + \
+             '\nYou subscribed on Web Development category'
+    bot.send_message(message.chat.id, output)
+
+@bot.message_handler(commands=['subscribe_webdis', 'swds'])
+def handle_develop_subscribe(message):
+    # if user doesn't exist
+    if not user_exist(message.from_user.id):
+        add_subscription(message.from_user.username, message.from_user.id, 'webdis')
+    else: # else update existing subscription
+        try:
+            Subscription().update(message.from_user.id, 'webdis', session)
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+
+    output = 'Chat ID: ' + str(message.chat.id) + \
+             '\nUser ID: ' + str(message.from_user.id) + \
+             '\nNick: ' + str(message.from_user.username) + \
+             '\nLast JOB ID in this category: ' + str(get_last_job('webdis')) + \
+             '\nYou subscribed on Web Design category'
     bot.send_message(message.chat.id, output)
 
 @bot.message_handler(content_types=["text"])
