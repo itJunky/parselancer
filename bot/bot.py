@@ -118,14 +118,14 @@ def handle_admin_subscribe(message):
              '\nUser ID: ' + str(message.from_user.id) + \
              '\nNick: ' + str(message.from_user.username) + \
              '\nLast JOB ID in this category: ' + str(get_last_job('admin')) + \
-             '\nYou subscribed on Administration category'
+             '\n*You subscribed on Administration category*'
     bot.send_message(message.chat.id, output)
 
 @bot.message_handler(commands=['subscribe_dev', 'sd'])
 def handle_develop_subscribe(message):
     # if user doesn't exist
     if not user_exist(message.from_user.id):
-        add_subscription(message.from_user.username, message.from_user.id, 'dev')
+        Subscription().add_new(message.from_user.username, message.from_user.id, 'dev', session)
     else: # else update existing subscription
         try:
             Subscription().update(message.from_user.id, 'dev', session)
@@ -144,10 +144,10 @@ def handle_develop_subscribe(message):
     bot.send_message(message.chat.id, output)
 
 @bot.message_handler(commands=['subscribe_webdev', 'swd'])
-def handle_develop_subscribe(message):
+def handle_webdevelop_subscribe(message):
     # if user doesn't exist
     if not user_exist(message.from_user.id):
-        add_subscription(message.from_user.username, message.from_user.id, 'webdev')
+        Subscription().add_new(message.from_user.username, message.from_user.id, 'webdev', session)
     else: # else update existing subscription
         try:
             Subscription().update(message.from_user.id, 'webdev', session)
@@ -166,10 +166,10 @@ def handle_develop_subscribe(message):
     bot.send_message(message.chat.id, output)
 
 @bot.message_handler(commands=['subscribe_webdis', 'swds'])
-def handle_develop_subscribe(message):
+def handle_webdesign_subscribe(message):
     # if user doesn't exist
     if not user_exist(message.from_user.id):
-        add_subscription(message.from_user.username, message.from_user.id, 'webdis')
+        Subscription().add_new(message.from_user.username, message.from_user.id, 'webdis', session)
     else: # else update existing subscription
         try:
             Subscription().update(message.from_user.id, 'webdis', session)
@@ -206,6 +206,7 @@ def user_exist(user_id):
         return True
     except TypeError: # if not in DB
         return False
+
 class Subscription(object):
     def add_new(self, user_name, tele_id, category, session):
         # add new subscription
