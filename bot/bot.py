@@ -62,13 +62,13 @@ def handle_freelancehunt(message):
              '\U0001f6e0 /freelancehunt_dev - Last jobs for Developers'
     bot.send_message(message.chat.id, output)
 
+
 @bot.message_handler(commands=['freelansim_adm', 'fra'])
 def handle_freelansim_adm(message):
     fetch_send_jobs('freelansim', 'admin', message.chat.id)
     output = 'You can subscribe for updates in this category by /subscribe_adm \
              \nOnly one category can be subscribed'
     bot.send_message(message.chat.id, output)
-
 
 @bot.message_handler(commands=['freelansim_webdev', 'frw'])
 def handle_freelansim_webdev(message):
