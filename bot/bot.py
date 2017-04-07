@@ -24,7 +24,9 @@ def handle_list(message):
         bot.send_message(message.chat.id, 'Please use private messages')
         return
     text = '\U0001f1f7\U0001f1fa /freelansim -- Last job from freelansim.ru\n'+\
+           '\U0001f1f7\U0001f1fa /freelancehunt -- Last job from freelansim.ru\n'+\
            '\U0001f1fa\U0001f1f8 /freelancecom -- Last job from freelance.com'
+
     bot.send_message(message.chat.id, text)
 
 @bot.message_handler(commands=['freelancecom', 'fc'])
@@ -47,6 +49,17 @@ def handle_freelansim(message):
              '\u2692 /freelansim_webdev - Last jobs for Web Developers\n'+\
              '\U0001f307 /freelansim_webdis - Last jobs for Web Designers\n'+\
              '\U0001f6e0 /freelansim_dev - Last jobs for Developers'
+    bot.send_message(message.chat.id, output)
+
+@bot.message_handler(commands=['freelancehunt', 'fch'])
+def handle_freelancehunt(message):
+    if message.chat.id < 0:
+        bot.send_message(message.chat.id, 'Please use private messages')
+        return
+    output = '\u2328 /freelancehunt_adm - Last jobs for sysadmins\n'+\
+             '\u2692 /freelancehunt_webdev - Last jobs for Web Developers\n'+\
+             '\U0001f307 /freelancehunt_webdis - Last jobs for Web Designers\n'+\
+             '\U0001f6e0 /freelancehunt_dev - Last jobs for Developers'
     bot.send_message(message.chat.id, output)
 
 @bot.message_handler(commands=['freelansim_adm', 'fra'])
@@ -93,7 +106,6 @@ def handle_freelance_webdev(message):
          \nOnly one category can be subscribed'
     bot.send_message(message.chat.id, output)
 
-
 @bot.message_handler(commands=['freelance_webdis', 'fcwd'])
 def handle_freelance_webdis(message):
     fetch_send_jobs('freelance', 'webdis', message.chat.id)
@@ -107,6 +119,36 @@ def handle_freelance_dev(message):
     output = 'You can subscribe for updates in this category by /subscribe_dev \
          \nOnly one category can be subscribed'
     bot.send_message(message.chat.id, output)
+
+
+@bot.message_handler(commands=['freelancehunt_adm', 'fcha'])
+def handle_freelancehunt_dev(message):
+    fetch_send_jobs('freelancehunt', 'admin', message.chat.id)
+    output = 'You can subscribe for updates in this category by /subscribe_dev \
+         \nOnly one category can be subscribed'
+    bot.send_message(message.chat.id, output)
+
+@bot.message_handler(commands=['freelancehunt_webdev', 'fchw'])
+def handle_freelancehunt_dev(message):
+    fetch_send_jobs('freelancehunt', 'webdev', message.chat.id)
+    output = 'You can subscribe for updates in this category by /subscribe_dev \
+         \nOnly one category can be subscribed'
+    bot.send_message(message.chat.id, output)
+
+@bot.message_handler(commands=['freelancehunt_webdis', 'fchwd'])
+def handle_freelancehunt_dev(message):
+    fetch_send_jobs('freelancehunt', 'webdis', message.chat.id)
+    output = 'You can subscribe for updates in this category by /subscribe_dev \
+         \nOnly one category can be subscribed'
+    bot.send_message(message.chat.id, output)
+
+@bot.message_handler(commands=['freelance_dev', 'fchd'])
+def handle_freelancehunt_dev(message):
+    fetch_send_jobs('freelancehunt', 'dev', message.chat.id)
+    output = 'You can subscribe for updates in this category by /subscribe_dev \
+         \nOnly one category can be subscribed'
+    bot.send_message(message.chat.id, output)
+
 
 @bot.message_handler(commands=['subscribe_adm', 'sa'])
 def handle_admin_subscribe(message):
