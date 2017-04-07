@@ -10,7 +10,7 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 # session = Session()
 session = scoped_session(sessionmaker(bind=engine))
 
-print("Started")
+print("ParceLancer Started")
 
 # Обработчик команд '/start' и '/help'.
 @bot.message_handler(commands=['start', 'help'])
@@ -20,12 +20,18 @@ def handle_start_help(message):
 
 @bot.message_handler(commands=['wrk', 'list', 'cmd'])
 def handle_list(message):
+    if message.chat.id < 0:
+        bot.send_message(message.chat.id, 'Please use private messages')
+        return
     text = '\U0001f1f7\U0001f1fa /freelansim -- Last job from freelansim.ru\n'+\
            '\U0001f1fa\U0001f1f8 /freelancecom -- Last job from freelance.com'
     bot.send_message(message.chat.id, text)
 
 @bot.message_handler(commands=['freelancecom', 'fc'])
 def handle_freelancecom(message):
+    if message.chat.id < 0:
+        bot.send_message(message.chat.id, 'Please use private messages')
+        return
     output = '\u2328 /freelance_adm - Last jobs for sysadmins\n'+\
              '\u2692 /freelance_webdev - Last jobs for Web Developers\n'+\
              '\U0001f307 /freelance_webdis - Last jobs for Web Designers\n'+\
@@ -34,6 +40,9 @@ def handle_freelancecom(message):
 
 @bot.message_handler(commands=['freelansim', 'fr'])
 def handle_freelansim(message):
+    if message.chat.id < 0:
+        bot.send_message(message.chat.id, 'Please use private messages')
+        return
     output = '\u2328 /freelansim_adm - Last jobs for sysadmins\n'+\
              '\u2692 /freelansim_webdev - Last jobs for Web Developers\n'+\
              '\U0001f307 /freelansim_webdis - Last jobs for Web Designers\n'+\
