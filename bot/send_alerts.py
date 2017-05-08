@@ -63,12 +63,12 @@ for user in users:
               job_text = " {} <b>{}</b>".format(str(job[0]),job[1].strip()) + \
                        "\n    🕑 {}".format(job[2]) + \
                        "\n    💰 {}".format(job[3].strip()) + \
-                       "\n    🕸 {}".format(job[4].strip())
+                       "\n    🕸 <a href='{}'>Подробнее</a>".format(job[4].strip())
             except AttributeError:
               job_text = " {} <b>{}</b>".format(str(job[0]),job[1].strip()) + \
                        "\n    🕑 {}".format(job[2]) + \
                        "\n    💰 {}".format('_') + \
-                       "\n    🕸 {}".format(job[4].strip())
+                       "\n    🕸 <a href='{}'>Подробнее</a>".format(job[4].strip())
             try: # Отправить работу юзеру
                 bot.send_message(user.tele_id, job_text, parse_mode='HTML', disable_web_page_preview=True)
                 print(job_text)
