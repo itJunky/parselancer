@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
 
+
 from db import *
 import telebot
 import config
 
 bot = telebot.TeleBot(config.token)
+
 from sqlalchemy.orm import sessionmaker, scoped_session
-# Session = sessionmaker(bind=engine)
-# session = Session()
 session = scoped_session(sessionmaker(bind=engine))
 
-print("ParceLancer Started")
 
 # Обработчик команд '/start' и '/help'.
 @bot.message_handler(commands=['start', 'help'])
@@ -298,6 +297,9 @@ def fetch_send_jobs(site, category, user_id):
     return 1
 
 
+
 if __name__ == '__main__':
+    print("ParceLancer Started")
+
     bot.polling(none_stop=True)
     # bot.polling(none_stop=False)
