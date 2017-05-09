@@ -10,6 +10,7 @@ bot = telebot.TeleBot(config.token)
 from sqlalchemy.orm import sessionmaker, scoped_session
 session = scoped_session(sessionmaker(bind=engine))
 
+from get_stats import get_stats_by
 
 # Обработчик команд '/start' и '/help'.
 @bot.message_handler(commands=['start', 'help'])
@@ -27,6 +28,22 @@ def handle_list(message):
            '\U0001f1fa\U0001f1f8 /freelancecom -- Last job from freelance.com'
 
     bot.send_message(message.chat.id, text)
+
+@bot.message_handler(commands=['stats', 'st'])
+def handle_stats(message):
+    
+    text = 'Statistics by category of job'
+    text = text+'\n'+'``` Time            ( 1   /7   /30 days)```'
+    categories = ['admin', 'webdev', 'dev', 'webdis']
+    for category in categories:
+        # print(category)
+        day, week, month = get_stats_by(category)
+        text = text+'\n'+'``` Jobs in {:8s}: {:,d}  {:,d}  {:,d}```'.format(category, day, week, month) 
+        # print(text)
+
+    print(text)
+    bot.send_message(message.chat.id, text, parse_mode='MARKDOWN')
+
 
 @bot.message_handler(commands=['freelancecom', 'fc'])
 def handle_freelancecom(message):
