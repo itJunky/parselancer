@@ -5,7 +5,8 @@ import config
 import telebot
 bot = telebot.TeleBot(config.token)
 
-from time import sleep
+from time import sleep, strftime
+from datetime import datetime
 
 from db import *
 from sqlalchemy.orm import sessionmaker, scoped_session
@@ -45,13 +46,13 @@ for user in users:
     if user.last_job < last_job_in_category:
         # Если в категории появилась новая работа, то отправить юзеру её
         if user.category == 'all':
-            cur = session.execute("SELECT id, title, parse_date, price, url, category \
+            cur = session.execute("SELECT id, title, parse_date, price, url, description, category \
                                    FROM job \
                                    WHERE id > {} \
                                    ORDER BY date(parse_date) \
                                    LIMIT 3".format(user.last_job))
         else:
-            cur = session.execute("SELECT id, title, parse_date, price, url \
+            cur = session.execute("SELECT id, title, parse_date, price, url, description \
                                    FROM job \
                                    WHERE category = '{}' AND id > {} \
                                    ORDER BY date(parse_date) \
@@ -59,16 +60,23 @@ for user in users:
         jobs = cur.fetchall()
 
         for job in jobs:
-            try:
-              job_text = " {} <b>{}</b>".format(str(job[0]),job[1].strip()) + \
-                       "\n    🕑 {}".format(job[2]) + \
-                       "\n    💰 {}".format(job[3].strip()) + \
-                       "\n    🕸 <a href='{}'>Подробнее</a>".format(job[4].strip())
-            except AttributeError:
-              job_text = " {} <b>{}</b>".format(str(job[0]),job[1].strip()) + \
-                       "\n    🕑 {}".format(job[2]) + \
-                       "\n    💰 {}".format('_') + \
-                       "\n    🕸 <a href='{}'>Подробнее</a>".format(job[4].strip())
+            # print(len(job))
+            if not job.description: text = '-'
+            else: text = str(job.description)
+            
+            price = job.price
+            if job.price == None: price = '-+-'
+
+            job_date = datetime.strptime(job[2], "%Y-%m-%d %H:%M:%S.%f")
+
+            print(job[2], job_date)
+            print(type(job_date))
+            job_text = "🛠 <b>{}</b>".format(str(job[1].strip())  + \
+                       "\n    🕰 {} #️⃣ {}".format(job_date.strftime("%Y-%m-%d %H:%M:%S"), job[0])) + \
+                       "\n    💰 {}".format(price) + \
+                       "\n    🌐 <a href='{}'>Подробнее</a>".format(job.url.strip()) + \
+                       "\n    🗒 {}".format(text)
+            
             try: # Отправить работу юзеру
                 bot.send_message(user.tele_id, job_text, parse_mode='HTML', disable_web_page_preview=True)
                 print(job_text)
@@ -82,11 +90,11 @@ for user in users:
                             filter(User.tele_id == user.tele_id).\
                             update({'category': 'unsubscribed'})
                 if '400' in e.result.text:
-                    # Если юзера больше не существует
+                    # Если юзера больше не существует (какой-то глюк и много юзеров улетает в эту категорию)
                     print('NEED DELETE for:', user.tele_id)
-                    session.query(User).\
-                            filter(User.tele_id == user.tele_id).\
-                            update({'category': 'deleted'})
+                    # session.query(User).\
+                    #         filter(User.tele_id == user.tele_id).\
+                    #         update({'category': 'deleted'})
 
                 # session.commit()
             last_id = job[0]
@@ -98,7 +106,7 @@ for user in users:
             session.execute(sql)
             session.commit()
 
-    session.close()
+session.close()
 
             # # pause
             # sleep(0.300)

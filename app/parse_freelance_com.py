@@ -32,28 +32,40 @@ def parse_category(url, category):
     all_jobs = soup.findAll('div', {'class': 'jobsearch-result-list'})
 
     for job in all_jobs:
+        # print job
         title = job.find('a', {'style': 'color: #000;'}).text
         print title
-        date_raw = job.find('div', {'class': 'col-xs-6 col-md-2 col-lg-2 lefttop'})
-        date = date_raw.find('b').text.split()[0]
-        print date
-        price = job.find('div', {'class': 'col-xs-6 col-md-2 col-lg-2 leftbottom'}).text.split()[2]
-        print price
         url = 'http://www.freelance.com' + job.find('a', {'style': 'color: #000;'}).get('href')
         print url
-
+        
         if not job_exist(url):
+            date_raw = job.find('div', {'class': 'col-xs-6 col-md-2 col-lg-2 lefttop'})
+            date = date_raw.find('b').text.split()[0]
+            print date
+            price = job.find('div', {'class': 'col-xs-6 col-md-2 col-lg-2 leftbottom'}).text.split()[2]
+            print price
+            text_page = urllib2.urlopen(url, context=ctx)
+            text_soup = BeautifulSoup(text_page)
+            text = text_soup.find('div', {'class': 'col-md-9 col-lg-9 description'}).text[11:]
+            # text = job.find('div', { 'class': 'col-xs-12 col-md-4 col-lg-4 center'}).text
+            
+            text_length = 320
+            text = (text[:text_length] + '..') if len(text) > text_length else text
+            print text
+
+            print '=========\n\n'
+
             job_row = Job(
                 title=unicode(title),
                 date=unicode(date),
                 price=price,
                 url=url,
                 category=category,
-                parse_date=datetime.now()
+                parse_date=datetime.now(),
+                description=text
             )
             session.add(job_row)
-
-    session.commit()
+            session.commit()
 
 
 parse_category(admin_url, 'admin')

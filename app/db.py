@@ -7,7 +7,8 @@ import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 # engine = create_engine('sqlite:///:memory:', echo=True)
 db_path = 'sqlite:///' + os.path.join(basedir, '../jobs.db')
-engine = create_engine(db_path, echo=True)
+# engine = create_engine(db_path, echo=True)
+engine = create_engine(db_path, echo=False)
 
 class Job(Base):
     __tablename__ = 'job'
@@ -19,6 +20,7 @@ class Job(Base):
     raw = Column(String)
     parse_date = Column(DateTime)
     category = Column(String)
+    description = Column(String)
 
 class User(Base):
     __tablename__ = 'users'

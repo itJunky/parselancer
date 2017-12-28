@@ -23,32 +23,33 @@ def parse_category(url, category):
     # all_jobs = soup.findAll('td', class_='left')
     all_jobs = soup.findAll('tr')
     for job in all_jobs:
-        url = 'https://freelancehunt.com'+job.find('a').attrs['href']
         title = job.find('a').text
-        text = job.find('a').attrs['title']
-        date = job.attrs['data-published']
-        # from IPython import embed; embed()
-        try: price = job.find('div', class_='price').text.split('\n')[1]
-        except AttributeError: price = None
-        # print(job)
-        print('\nDate:', date,\
-              '\nTitle:', title,\
-              '\nText:', text,\
-              '\nPrice:', price,\
-              '\nURL:', url, '\n\n'
-        )
+        url = 'https://freelancehunt.com'+job.find('a').attrs['href']
+        
         if not job_exist(url):
+            text = job.find('a').attrs['title']
+            date = job.attrs['data-published']
+            # from IPython import embed; embed()
+            try: price = job.find('div', class_='price').text.split('\n')[1]
+            except AttributeError: price = None
+            # print(job)
+            print('\nDate:', date,\
+                  '\nTitle:', title,\
+                  '\nText:', text,\
+                  '\nPrice:', price,\
+                  '\nURL:', url, '\n\n'
+            )
             job_row = Job(
                 title=title,
                 date=date,
                 price=price,
                 url=url,
                 category=category,
-                parse_date=datetime.now()
+                parse_date=datetime.now(),
+                description=text
             )
             session.add(job_row)
-
-    session.commit()
+            session.commit()
 
 parse_category(admin_url, 'admin')
 parse_category(dev_url, 'dev')

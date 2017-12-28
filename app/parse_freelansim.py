@@ -29,36 +29,51 @@ def parse_category(url, category):
 
     for job in all_jobs:
 
+        # print job
         title = job.find("div", "task__title").text
         print "Title:\t", title
+        
         url = 'http://freelansim.ru'+job.find("div", "task__title").find("a").get('href')
         print "Url:\t", url
-        date = job.find("span", "params__published-at").text.splitlines()
-        date = str(date[0]+' '+date[1])
-        print "Date:\t", date
-        price_raw = job.find("div", "task__price")
-        price = price_raw.find("span", "count")
-        if price:
-            price = price.text
-        else: # if not exist, find another tag
-            price = price_raw.find("span", "negotiated_price").text
-
-        print "Price:\t", price, "\n"
-        #raw = job.contents
-        # category = 'admin'
-
+        
         if not job_exist(url):
+         
+            date = job.find("span", "params__published-at").text.splitlines()
+            date = str(date[0]+' '+date[1])
+            print "Date:\t", date
+            
+            price_raw = job.find("div", "task__price")
+            price = price_raw.find("span", "count")
+            if price:
+                price = price.text
+            else: # if not exist, find another tag
+                price = price_raw.find("span", "negotiated_price").text
+
+            print "Price:\t", price
+            #raw = job.contents
+            # category = 'admin'
+            
+            text_page = urllib2.urlopen(url)
+            text_soup = BeautifulSoup(text_page)
+            text = text_soup.find('div', {'class': 'task__description'}).text
+            
+            text_length = 320
+            text = (text[:text_length] + '..') if len(text) > text_length else text
+
+            print text, "\n"
+
             job_row = Job(
                             title = unicode(title),
                             date = unicode(date),
                             price = price,
                             url = url,
                             category = category,
-                            parse_date = datetime.now()
+                            parse_date = datetime.now(),
+                            description = text
             )
             session.add(job_row)
+            session.commit()
 
-    session.commit()
 
 parse_category(admin_url, 'admin')
 parse_category(webdev_url, 'webdev')
