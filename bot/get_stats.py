@@ -43,8 +43,14 @@ def get_stats_by(category):
 
     return res
 
+def get_stats_subscribers():
+    subcribers = len(session.query(User).all())
+    return subcribers
+
 if __name__ == '__main__':
     print("ParceLancer Stats")
     print('Time \t\t-1-\t-7-\t-30- days')
     for category in get_all_stats():
         print(category)
+
+    print("Suscribers: ", get_stats_subscribers())
