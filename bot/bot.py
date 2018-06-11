@@ -10,7 +10,7 @@ bot = telebot.TeleBot(config.token)
 from sqlalchemy.orm import sessionmaker, scoped_session
 session = scoped_session(sessionmaker(bind=engine))
 
-from get_stats import get_stats_by
+from get_stats import get_stats_by, get_stats_subscribers
 
 # Обработчик команд '/start' и '/help'.
 @bot.message_handler(commands=['start', 'help'])
@@ -32,7 +32,7 @@ def handle_list(message):
 @bot.message_handler(commands=['stats', 'st'])
 def handle_stats(message):
     
-    text = 'Statistics by category of job'
+    text = '📈 Statistics by category of job'
     text = text+'\n'+'``` Time            ( 1   /7   /30 days)```'
     categories = ['admin', 'webdev', 'dev', 'webdis']
     for category in categories:
@@ -41,6 +41,7 @@ def handle_stats(message):
         text = text+'\n'+'``` Jobs in {:8s}: {:,d}  {:,d}  {:,d}```'.format(category, day, week, month) 
         # print(text)
 
+    text = text+'\n👥 '+'_Subscribed users:_ *'+str(get_stats_subscribers())+'*'
     print(text)
     bot.send_message(message.chat.id, text, parse_mode='MARKDOWN')
 
@@ -110,7 +111,7 @@ def handle_freelansim_dev(message):
 
 @bot.message_handler(commands=['freelance_adm', 'fca'])
 def handle_freelansim_adm(message):
-    fetch_send_jobs('freelance', 'admin', message.chat.id)
+    fetch_send_jobs('freelance.com', 'admin', message.chat.id)
     output = 'You can subscribe for updates in this category by /subscribe_adm \
              \nOnly one category can be subscribed'
     bot.send_message(message.chat.id, output)
@@ -158,7 +159,7 @@ def handle_freelancehunt_dev(message):
          \nOnly one category can be subscribed'
     bot.send_message(message.chat.id, output)
 
-@bot.message_handler(commands=['freelance_dev', 'fchd'])
+@bot.message_handler(commands=['freelancehunt_dev', 'fchd'])
 def handle_freelancehunt_dev(message):
     fetch_send_jobs('freelancehunt', 'dev', message.chat.id)
     output = 'You can subscribe for updates in this category by /subscribe_dev \
@@ -299,20 +300,33 @@ def get_last_job(category):
     return cur.fetchone()[0]
 
 def fetch_send_jobs(site, category, user_id):
+    messages_limit = 5
     cur = session.execute("SELECT * \
                            FROM job \
                            WHERE url like '%{}%' \
                            AND category = '{}' \
                            ORDER BY id \
-                           DESC LIMIT {}".format(site, category, 3))
+                           DESC LIMIT {}".format(site, category, messages_limit))
     jobs = cur.fetchall()
     for job in jobs:
-        output = str(job.id) + ' ' + job[4] + \
-                 '\n    \U0001f551 ' + job[7] + \
-                 '\n    💰 ' + job[3]
-        bot.send_message(user_id, output)
-    return 1
 
+        text = str(job.description)
+        if text == None: text = '-'
+        
+        price = job.price
+        if job.price == None: price = '-+-'
+
+
+        print(text)
+
+        output = "    🛠 <b>{}</b>".format(str(job.title))  + \
+               "\n    🕰 {} #️⃣ {}".format(job[7], job[0]) + \
+               "\n    💰 {}".format(price) + \
+               "\n    🌐 <a href='{}'>Подробнее</a>".format(job[2]) + \
+               "\n    🗒 {}".format(text)
+
+        bot.send_message(user_id, output, parse_mode='HTML', disable_web_page_preview=True)
+    return 1
 
 
 if __name__ == '__main__':
