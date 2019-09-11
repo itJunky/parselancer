@@ -82,89 +82,51 @@ def handle_freelancehunt(message):
 
 @bot.message_handler(commands=['freelansim_adm', 'fra'])
 def handle_freelansim_adm(message):
-    fetch_send_jobs('freelansim', 'admin', message.chat.id)
-    output = 'You can subscribe for updates in this category by /subscribe_adm \
-             \nOnly one category can be subscribed'
-    bot.send_message(message.chat.id, output)
+    send_jobs('freelansim', 'admin')
 
 @bot.message_handler(commands=['freelansim_webdev', 'frw'])
 def handle_freelansim_webdev(message):
-    fetch_send_jobs('freelansim', 'webdev', message.chat.id)
-    output = 'You can subscribe for updates in this category by /subscribe_webdev \
-             \nOnly one category can be subscribed'
-    bot.send_message(message.chat.id, output)
+    send_jobs('freelansim', 'webdev')
 
 @bot.message_handler(commands=['freelansim_webdis', 'frwd'])
 def handle_freelansim_webdis(message):
-    fetch_send_jobs('freelansim', 'webdis', message.chat.id)
-    output = 'You can subscribe for updates in this category by /subscribe_webdis \
-             \nOnly one category can be subscribed'
-    bot.send_message(message.chat.id, output)
+    send_jobs('freelansim', 'webdis')
 
 @bot.message_handler(commands=['freelansim_dev', 'frd'])
 def handle_freelansim_dev(message):
-    fetch_send_jobs('freelansim', 'dev', message.chat.id)
-    output = 'You can subscribe for updates in this category by /subscribe_dev \
-         \nOnly one category can be subscribed'
-    bot.send_message(message.chat.id, output)
-
+    send_jobs('freelansim', 'dev')
 
 @bot.message_handler(commands=['freelance_adm', 'fca'])
 def handle_freelansim_adm(message):
-    fetch_send_jobs('freelance.com', 'admin', message.chat.id)
-    output = 'You can subscribe for updates in this category by /subscribe_adm \
-             \nOnly one category can be subscribed'
-    bot.send_message(message.chat.id, output)
+    send_jobs('freelance.com', 'admin')
 
 @bot.message_handler(commands=['freelance_webdev', 'fcw'])
 def handle_freelance_webdev(message):
-    fetch_send_jobs('freelance', 'webdev', message.chat.id)
-    output = 'You can subscribe for updates in this category by /subscribe_webdev \
-         \nOnly one category can be subscribed'
-    bot.send_message(message.chat.id, output)
+    send_jobs('freelance', 'webdev')
 
 @bot.message_handler(commands=['freelance_webdis', 'fcwd'])
 def handle_freelance_webdis(message):
-    fetch_send_jobs('freelance', 'webdis', message.chat.id)
-    output = 'You can subscribe for updates in this category by /subscribe_webdis \
-         \nOnly one category can be subscribed'
-    bot.send_message(message.chat.id, output)
+    send_jobs('freelance', 'webdis')
 
 @bot.message_handler(commands=['freelance_dev', 'fcd'])
 def handle_freelance_dev(message):
-    fetch_send_jobs('freelance', 'dev', message.chat.id)
-    output = 'You can subscribe for updates in this category by /subscribe_dev \
-         \nOnly one category can be subscribed'
-    bot.send_message(message.chat.id, output)
-
+    send_jobs('freelance', 'dev')
 
 @bot.message_handler(commands=['freelancehunt_adm', 'fcha'])
 def handle_freelancehunt_dev(message):
-    fetch_send_jobs('freelancehunt', 'admin', message.chat.id)
-    output = 'You can subscribe for updates in this category by /subscribe_dev \
-         \nOnly one category can be subscribed'
-    bot.send_message(message.chat.id, output)
+    send_jobs('freelancehunt', 'admin')
 
 @bot.message_handler(commands=['freelancehunt_webdev', 'fchw'])
 def handle_freelancehunt_dev(message):
-    fetch_send_jobs('freelancehunt', 'webdev', message.chat.id)
-    output = 'You can subscribe for updates in this category by /subscribe_dev \
-         \nOnly one category can be subscribed'
-    bot.send_message(message.chat.id, output)
+    send_jobs('freelancehunt', 'webdev')
 
 @bot.message_handler(commands=['freelancehunt_webdis', 'fchwd'])
 def handle_freelancehunt_dev(message):
-    fetch_send_jobs('freelancehunt', 'webdis', message.chat.id)
-    output = 'You can subscribe for updates in this category by /subscribe_dev \
-         \nOnly one category can be subscribed'
-    bot.send_message(message.chat.id, output)
+    send_jobs('freelancehunt', 'webdis')
 
 @bot.message_handler(commands=['freelancehunt_dev', 'fchd'])
 def handle_freelancehunt_dev(message):
-    fetch_send_jobs('freelancehunt', 'dev', message.chat.id)
-    output = 'You can subscribe for updates in this category by /subscribe_dev \
-         \nOnly one category can be subscribed'
-    bot.send_message(message.chat.id, output)
+    send_jobs('freelancehunt', 'dev')
 
 
 @bot.message_handler(commands=['subscribe_adm', 'sa'])
@@ -299,7 +261,17 @@ def get_last_job(category):
                            LIMIT 1".format(category))
     return cur.fetchone()[0]
 
-def fetch_send_jobs(site, category, user_id):
+def send_jobs(site, category):
+    output = fetch_jobs(site, category)
+    for msg in output:
+        bot.send_message(message.chat.id, msg, parse_mode='HTML', disable_web_page_preview=True)
+
+    output = 'You can subscribe for updates in this category by /subscribe_{}'.format(category) + \
+             '\nOnly one category can be subscribed'
+    bot.send_message(message.chat.id, output)
+
+def fetch_jobs(site, category):
+    output = []
     messages_limit = 5
     cur = session.execute("SELECT * \
                            FROM job \
@@ -309,24 +281,21 @@ def fetch_send_jobs(site, category, user_id):
                            DESC LIMIT {}".format(site, category, messages_limit))
     jobs = cur.fetchall()
     for job in jobs:
-
         text = str(job.description)
         if text == None: text = '-'
         
         price = job.price
         if job.price == None: price = '-+-'
 
-
         print(text)
 
-        output = "    🛠 <b>{}</b>".format(str(job.title))  + \
-               "\n    🕰 {} #️⃣ {}".format(job[7], job[0]) + \
-               "\n    💰 {}".format(price) + \
-               "\n    🌐 <a href='{}'>Подробнее</a>".format(job[2]) + \
-               "\n    🗒 {}".format(text)
+        output.append("    🛠 <b>{}</b>".format(str(job.title))  + \
+                    "\n    🕰 {} #️⃣ {}".format(job[7], job[0]) + \
+                    "\n    💰 {}".format(price) + \
+                    "\n    🌐 <a href='{}'>Подробнее</a>".format(job[2]) + \
+                    "\n    🗒 {}".format(text))
 
-        bot.send_message(user_id, output, parse_mode='HTML', disable_web_page_preview=True)
-    return 1
+    return output
 
 
 if __name__ == '__main__':
