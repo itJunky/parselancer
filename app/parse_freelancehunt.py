@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import requests
-import re
 from datetime import datetime
-from bs4 import BeautifulSoup  # Для обработки HTML\
+from bs4 import BeautifulSoup  # Для обработки HTML
 
 from db import *
 from common import job_exist
@@ -24,7 +23,8 @@ def parse_category(url, category):
     all_jobs = soup.findAll('tr')
     for job in all_jobs:
         title = job.find('a').text
-        url = 'https://freelancehunt.com'+job.find('a').attrs['href']
+        #url = 'https://freelancehunt.com'+job.find('a').attrs['href']
+        url = ''+job.find('a').attrs['href']
         
         if not job_exist(url):
             text = job.find('a').attrs['title']
@@ -50,6 +50,8 @@ def parse_category(url, category):
             )
             session.add(job_row)
             session.commit()
+        else:
+            print(title)
 
 parse_category(admin_url, 'admin')
 parse_category(dev_url, 'dev')
