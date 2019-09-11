@@ -81,53 +81,52 @@ def handle_freelancehunt(message):
 
 
 @bot.message_handler(commands=['freelansim_adm', 'fra'])
-def handle_freelansim_adm(message):
-    send_jobs('freelansim', 'admin')
+def handle_freelansim_adm(msg):
+    send_jobs('freelansim', 'admin', msg.chat.id)
 
 @bot.message_handler(commands=['freelansim_webdev', 'frw'])
-def handle_freelansim_webdev(message):
-    send_jobs('freelansim', 'webdev')
+def handle_freelansim_webdev(msg):
+    send_jobs('freelansim', 'webdev', msg.chat.id)
 
 @bot.message_handler(commands=['freelansim_webdis', 'frwd'])
-def handle_freelansim_webdis(message):
-    send_jobs('freelansim', 'webdis')
+def handle_freelansim_webdis(msg):
+    send_jobs('freelansim', 'webdis', msg.chat.id)
 
 @bot.message_handler(commands=['freelansim_dev', 'frd'])
-def handle_freelansim_dev(message):
-    send_jobs('freelansim', 'dev')
+def handle_freelansim_dev(msg):
+    send_jobs('freelansim', 'dev', msg.chat.id)
 
 @bot.message_handler(commands=['freelance_adm', 'fca'])
-def handle_freelansim_adm(message):
-    send_jobs('freelance.com', 'admin')
+def handle_freelansim_adm(msg):
+    send_jobs('freelance.com', 'admin', msg.chat.id)
 
 @bot.message_handler(commands=['freelance_webdev', 'fcw'])
-def handle_freelance_webdev(message):
-    send_jobs('freelance', 'webdev')
+def handle_freelance_webdev(msg):
+    send_jobs('freelance', 'webdev', msg.chat.id)
 
 @bot.message_handler(commands=['freelance_webdis', 'fcwd'])
-def handle_freelance_webdis(message):
-    send_jobs('freelance', 'webdis')
+def handle_freelance_webdis(msg):
+    send_jobs('freelance', 'webdis', msg.chat.id)
 
 @bot.message_handler(commands=['freelance_dev', 'fcd'])
-def handle_freelance_dev(message):
-    send_jobs('freelance', 'dev')
+def handle_freelance_dev(msg):
+    send_jobs('freelance', 'dev', msg.chat.id)
 
 @bot.message_handler(commands=['freelancehunt_adm', 'fcha'])
-def handle_freelancehunt_dev(message):
-    send_jobs('freelancehunt', 'admin')
+def handle_freelancehunt_dev(msg):
+    send_jobs('freelancehunt', 'admin', msg.chat.id)
 
 @bot.message_handler(commands=['freelancehunt_webdev', 'fchw'])
-def handle_freelancehunt_dev(message):
-    send_jobs('freelancehunt', 'webdev')
+def handle_freelancehunt_dev(msg):
+    send_jobs('freelancehunt', 'webdev', msg.chat.id)
 
 @bot.message_handler(commands=['freelancehunt_webdis', 'fchwd'])
-def handle_freelancehunt_dev(message):
-    send_jobs('freelancehunt', 'webdis')
+def handle_freelancehunt_dev(msg):
+    send_jobs('freelancehunt', 'webdis', msg.chat.id)
 
 @bot.message_handler(commands=['freelancehunt_dev', 'fchd'])
-def handle_freelancehunt_dev(message):
-    send_jobs('freelancehunt', 'dev')
-
+def handle_freelancehunt_dev(msg):
+    send_jobs('freelancehunt', 'dev', msg.chat.id)
 
 @bot.message_handler(commands=['subscribe_adm', 'sa'])
 def handle_admin_subscribe(message):
@@ -261,14 +260,14 @@ def get_last_job(category):
                            LIMIT 1".format(category))
     return cur.fetchone()[0]
 
-def send_jobs(site, category):
+def send_jobs(site, category, user_id):
     output = fetch_jobs(site, category)
     for msg in output:
-        bot.send_message(message.chat.id, msg, parse_mode='HTML', disable_web_page_preview=True)
+        bot.send_message(user_id, msg, parse_mode='HTML', disable_web_page_preview=True)
 
     output = 'You can subscribe for updates in this category by /subscribe_{}'.format(category) + \
              '\nOnly one category can be subscribed'
-    bot.send_message(message.chat.id, output)
+    bot.send_message(user_id, output)
 
 def fetch_jobs(site, category):
     output = []
