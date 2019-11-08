@@ -39,7 +39,7 @@ def parse_category(url, category):
         if not job_exist(url):
          
             date = job.find("span", "params__published-at").text.splitlines()
-            date = str(date[0]+' '+date[1])
+            date = str(date[0])
             print "Date:\t", date
             
             price_raw = job.find("div", "task__price")
