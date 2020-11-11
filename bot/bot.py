@@ -286,12 +286,10 @@ def fetch_jobs(site, category):
         price = job.price
         if job.price == None: price = '-+-'
 
-        print(text)
-
         output.append("    🛠 <b>{}</b>".format(str(job.title))  + \
                     "\n    🕰 {} #️⃣ {}".format(job[7], job[0]) + \
                     "\n    💰 {}".format(price) + \
-                    "\n    🌐 <a href='{}'>Подробнее</a>".format(job[2]) + \
+                    "\n    🌐 <a href='{}'>Подробнее</a>".format(job[4]) + \
                     "\n    🗒 {}".format(text))
 
     return output
