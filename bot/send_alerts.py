@@ -71,11 +71,16 @@ for user in users:
 
             print(job[2], job_date)
             print(type(job_date))
-            job_text = "🛠 <b>{}</b>".format(str(job[1].strip())  + \
-                       "\n    🕰 {} #️⃣ {}".format(job_date.strftime("%Y-%m-%d %H:%M:%S"), job[0])) + \
-                       "\n    💰 {}".format(price) + \
-                       "\n    🌐 <a href='{}'>Подробнее</a>".format(job.url.strip()) + \
-                       "\n    🗒 {}".format(text)
+            #job_text = "🛠 <b>{}</b>".format(str(job[1].strip())  + \
+            #           "\n    🕰 {} #️⃣ {}".format(job_date.strftime("%Y-%m-%d %H:%M:%S"), job[0])) + \
+            #           "\n    💰 {}".format(price) + \
+            #           "\n    🌐 <a href='{}'>Подробнее</a>".format(job.url.strip()) + \
+            #           "\n    🗒 {}".format(text)
+            job_text = "⛏ <b>{}</b>".format(str(job[1].strip())  + \
+                       "\n\n💎 Награда: {}".format(price) + \
+                       "\n⏳ Публикация: {} #️⃣ {}".format(job_date.strftime("%Y-%m-%d %H:%M:%S"), job[0])) + \
+                       "\n📜 {}".format(text) + \
+                       "\n🌐 <a href='{}'>Подробнее</a>".format(job.url.strip())
             
             try: # Отправить работу юзеру
                 bot.send_message(user.tele_id, job_text, parse_mode='HTML', disable_web_page_preview=True)
