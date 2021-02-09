@@ -18,7 +18,7 @@ webdis_url = 'https://freelancehunt.com/projects?skills%5B%5D=41&skills%5B%5D=42
 
 def parse_category(url, category):
     page = requests.get(url).content
-    soup = BeautifulSoup(page, 'lxml')
+    soup = BeautifulSoup(page)
     # all_jobs = soup.findAll('td', class_='left')
     all_jobs = soup.findAll('tr')
     for job in all_jobs:
