@@ -19,7 +19,7 @@ webdis_url = 'https://www.weblancer.net/jobs/veb-dizajn-i-interfejsy-1/'
 
 def parse_category(url, category):
     page = requests.get(url).content
-    soup = BeautifulSoup(page, 'lxml')
+    soup = BeautifulSoup(page, 'html.parser')
     all_jobs = soup.findAll('div', {'class': 'row'})
     for job in all_jobs:
         title_raw = job.find('div', class_='col-sm-10')
