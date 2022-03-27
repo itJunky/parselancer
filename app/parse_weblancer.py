@@ -2,12 +2,13 @@
 
 import requests
 from datetime import datetime
-from bs4 import BeautifulSoup          # Для обработки HTML
+from bs4 import BeautifulSoup  # Для обработки HTML
 
 from db import *
 from common import job_exist
 
 from sqlalchemy.orm import sessionmaker
+
 Session = sessionmaker(bind=engine)
 session = Session()
 
