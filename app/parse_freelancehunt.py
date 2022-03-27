@@ -8,6 +8,7 @@ from db import *
 from common import job_exist
 
 from sqlalchemy.orm import sessionmaker
+
 Session = sessionmaker(bind=engine)
 session = Session()
 
@@ -19,26 +20,30 @@ webdis_url = 'https://freelancehunt.com/projects?skills%5B%5D=41&skills%5B%5D=42
 def parse_category(url, category):
     page = requests.get(url).content
     soup = BeautifulSoup(page)
-    # all_jobs = soup.findAll('td', class_='left')
-    all_jobs = soup.findAll('tr')
+
+    all_jobs = soup.find_all('tr')
+
     for job in all_jobs:
-        title = job.find('a').text
-        #url = 'https://freelancehunt.com'+job.find('a').attrs['href']
-        url = ''+job.find('a').attrs['href']
-        
+        a = job.find('a')
+        title = a.text.strip()
+        url = 'https://freelancehunt.com' + a.attrs['href']
+
         if not job_exist(url):
-            text = job.find('a').attrs['title']
-            date = job.attrs['data-published']
-            # from IPython import embed; embed()
-            try: price = job.find('div', class_='price').text.split('\n')[1]
-            except AttributeError: price = None
-            # print(job)
+            text = job.find('p', {"style": "word-break: break-word"}).text.strip()
+            date = int(job.attrs['data-published'])
+
+            try:
+                price = job.find('div', class_='text-green price with-tooltip').text.strip()
+            except AttributeError:
+                price = None
+
             print('\nDate:', date,\
-                  '\nTitle:', title,\
-                  '\nText:', text,\
-                  '\nPrice:', price,\
-                  '\nURL:', url, '\n\n'
+                    '\nTitle:', title,\
+                    '\nText:', text,\
+                    '\nPrice:', price,\
+                    '\nURL:', url, '\n\n'
             )
+
             job_row = Job(
                 title=title,
                 date=date,
@@ -48,8 +53,10 @@ def parse_category(url, category):
                 parse_date=datetime.now(),
                 description=text
             )
+
             session.add(job_row)
             session.commit()
+
         else:
             print(title)
 
