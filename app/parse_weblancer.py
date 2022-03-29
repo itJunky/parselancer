@@ -29,8 +29,14 @@ def parse_category(url, category):
     all_jobs = soup.find_all('div', class_='row click_container-link set_href')
 
     for job in all_jobs:
-        if job.find('span', class_='text-muted').text.startswith('Закрыт'):
-            continue
+        right = job.find('div', class_='col-sm-4 text-sm-right').find('span')
+
+        try:
+            if right.text.startswith('Закрыт'):
+                continue
+
+        except:
+            pass
 
         a = job.find('div', class_='title').find('a')
 
@@ -38,12 +44,14 @@ def parse_category(url, category):
         url = 'https://www.weblancer.net' + a.attrs['href']
 
         if not job_exist(url):
-            date = int(job.find('span', class_='time_ago').attrs['data-timestamp'])
+            date = int(right.find('span', class_='time_ago').attrs['data-timestamp'])
 
             try:
-                text = job.find('span', class_='snippet').text.strip()
+                text = " ".join(job.find('div', class_='collapse').text.strip().split(" ")[:-1])
             except AttributeError:
                 text = job.find('div', class_='text_field text-inline').text.strip()
+
+            text = text.replace("\n", " ")
 
             try:
                 price = job.find('div', class_='float-right float-sm-none title amount indent-xs-b0').find('span').text.strip()
