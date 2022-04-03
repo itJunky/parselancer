@@ -44,8 +44,10 @@ def parse_category(url, category):
         url = 'https://www.weblancer.net' + a.attrs['href']
 
         if not job_exist(url):
-            date = int(right.find('span', class_='time_ago').attrs['data-timestamp'])
-
+            try:
+                date = int(right.find('span', class_='time_ago').attrs['data-timestamp'])
+            except:
+                date = ''
             try:
                 text = " ".join(job.find('div', class_='collapse').text.strip().split(" ")[:-1])
             except AttributeError:
@@ -58,12 +60,12 @@ def parse_category(url, category):
             except AttributeError:
                 price = None
 
-            print('\nDate:', date, \
-                    '\nTitle:', title, \
-                    '\nText:', text, \
-                    '\nPrice:', price, \
-                    '\nURL:', url
-            )
+           #print('\nDate:', date, \
+           #        '\nTitle:', title, \
+           #        '\nText:', text, \
+           #        '\nPrice:', price, \
+           #        '\nURL:', url
+           #)
 
             job_row = Job(
                 title=title,
@@ -78,8 +80,8 @@ def parse_category(url, category):
             session.add(job_row)
             session.commit()
 
-        else:
-            print(title)
+        #else:
+        #    print(title)
 
 
 for admin_url in admin_urls:

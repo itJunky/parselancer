@@ -19,7 +19,7 @@ webdis_url = 'https://freelancehunt.com/projects?skills%5B%5D=41&skills%5B%5D=42
 
 def parse_category(url, category):
     page = requests.get(url).content
-    soup = BeautifulSoup(page)
+    soup = BeautifulSoup(page, "html.parser")
 
     all_jobs = soup.find_all('tr')
 
@@ -37,12 +37,12 @@ def parse_category(url, category):
             except AttributeError:
                 price = None
 
-            print('\nDate:', date,\
-                    '\nTitle:', title,\
-                    '\nText:', text,\
-                    '\nPrice:', price,\
-                    '\nURL:', url, '\n\n'
-            )
+           #print('\nDate:', date,\
+           #        '\nTitle:', title,\
+           #        '\nText:', text,\
+           #        '\nPrice:', price,\
+           #        '\nURL:', url, '\n\n'
+           #)
 
             job_row = Job(
                 title=title,
@@ -57,8 +57,8 @@ def parse_category(url, category):
             session.add(job_row)
             session.commit()
 
-        else:
-            print(title)
+        #else:
+        #    print(title)
 
 parse_category(admin_url, 'admin')
 parse_category(dev_url, 'dev')

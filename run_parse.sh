@@ -1,6 +1,6 @@
 #!/bin/bash
 
-pwd
+#pwd
 already_running=`ps aux | grep parse_.*py | grep -v grep | wc -l`
 if [ $already_running -eq 0 ]
 then

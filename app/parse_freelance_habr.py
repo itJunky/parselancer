@@ -21,7 +21,7 @@ dev_url = "https://freelance.habr.com/tasks?categories=app_all_inclusive,app_scr
 
 def parse_category(url, category):
     page = requests.get(url).content
-    soup = BeautifulSoup(page)
+    soup = BeautifulSoup(page, "html.parser")
     all_jobs = soup.findAll('article', {"class": "task task_list"})
 
     for job in all_jobs:
@@ -40,13 +40,13 @@ def parse_category(url, category):
                 price = price_raw.find("span", "negotiated_price").text
 
             text_page = requests.get(url).content
-            text_soup = BeautifulSoup(text_page)
+            text_soup = BeautifulSoup(text_page, "html.parser")
             text = text_soup.find('div', {'class': 'task__description'}).text
 
             text_length = 320
             text = (text[:text_length] + '..') if len(text) > text_length else text
 
-            print(text, "\n")
+            #print(text, "\n")
 
             job_row = Job(
                 title = title,
@@ -61,8 +61,8 @@ def parse_category(url, category):
             session.add(job_row)
             session.commit()
 
-        else:
-            print(title)
+        #else:
+        #    print(title)
 
 
 parse_category(admin_url, 'admin')
