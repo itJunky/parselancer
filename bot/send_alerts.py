@@ -3,6 +3,7 @@
 import json
 import config
 import telebot
+from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 bot = telebot.TeleBot(config.token)
 
 from time import sleep, strftime
@@ -70,21 +71,17 @@ for user in users:
             job_date = datetime.strptime(job[2], "%Y-%m-%d %H:%M:%S.%f")
 
             print(job[2], job_date)
-            print(type(job_date))
-            #job_text = "🛠 <b>{}</b>".format(str(job[1].strip())  + \
-            #           "\n    🕰 {} #️⃣ {}".format(job_date.strftime("%Y-%m-%d %H:%M:%S"), job[0])) + \
-            #           "\n    💰 {}".format(price) + \
-            #           "\n    🌐 <a href='{}'>Подробнее</a>".format(job.url.strip()) + \
-            #           "\n    🗒 {}".format(text)
+            #print(type(job_date))
             job_text = "⛏ <b>{}</b>".format(str(job[1].strip())  + \
                        "\n\n💎 Награда: {}".format(price) + \
                        "\n⏳ Публикация: {} #️⃣ {}".format(job_date.strftime("%Y-%m-%d %H:%M:%S"), job[0])) + \
-                       "\n📜 {}".format(text) + \
-                       "\n🌐 <a href='{}'>Подробнее</a>".format(job.url.strip())
-            
+                       "\n📜 {}".format(text) #+ \
+                       #"\n🌐 <a href='{}'>Подробнее</a>".format(job.url.strip())
+            markup = InlineKeyboardMarkup()
+            markup.add(InlineKeyboardButton("🌐 Подробнее", url=job.url.strip()))
             try: # Отправить работу юзеру
-                bot.send_message(user.tele_id, job_text, parse_mode='HTML', disable_web_page_preview=True)
-                print(job_text)
+                bot.send_message(user.tele_id, job_text, parse_mode='HTML', reply_markup=markup, disable_web_page_preview=True)
+                #print(job_text)
             except telebot.apihelper.ApiException as e:
                 print('HTTP ERROR -', e.result.text)
                 if '403' in e.result.text:
@@ -103,7 +100,7 @@ for user in users:
 
                 # session.commit()
             last_id = job[0]
-            print('SENDING: ', last_id, job[4], '\n')
+            #print('SENDING: ', last_id, job[4], '\n')
 
             # TODO Поменять ему последнюю работу
             sql = "UPDATE users SET last_job = '{}' \
