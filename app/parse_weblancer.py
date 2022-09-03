@@ -29,9 +29,8 @@ def parse_category(url, category):
     all_jobs = soup.find_all('div', class_='row click_container-link set_href')
 
     for job in all_jobs:
-        right = job.find('div', class_='col-sm-4 text-sm-right').find('span')
-
         try:
+            right = job.find('div', class_='col-sm-4 text-sm-right').find('span')
             if right.text.startswith('Закрыт'):
                 continue
 
