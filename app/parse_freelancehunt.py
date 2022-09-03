@@ -24,7 +24,11 @@ def parse_category(url, category):
     all_jobs = soup.find_all('tr')
 
     for job in all_jobs:
-        a = job.find('a')
+        try:
+            a = job.find('a')
+        except AttributeError:
+            # just skip it
+            continue
         title = a.text.strip()
         url = 'https://freelancehunt.com' + a.attrs['href']
 
