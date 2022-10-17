@@ -1,7 +1,9 @@
-#!/bin/bash
+#!/bin/bash 
+set -x 
+set -e
 
-PID=`ps -eo pid,etime,cmd | grep " parse_.*py" | grep -v grep | awk '{print $1}'`
-START_TIME=`ps -eo pid,etime,cmd | grep " parse_.*py" | grep -v grep | awk '{print $2}' | awk -F ':' '{print $1}'`
+PID=`ps -eo pid,etime,cmd | grep " ./app/parse_.*py" | grep -v grep | awk '{print $1}'`
+START_TIME=`ps -eo pid,etime,cmd | grep " ./app/parse_.*py" | grep -v grep | awk '{print $2}' | awk -F ':' '{print $1}'`
 
 #echo $PID
 #echo $START_TIME
