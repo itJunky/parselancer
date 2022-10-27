@@ -25,7 +25,8 @@ def handle_list(message):
         return
     text = '\U0001f1f7\U0001f1fa /freelansim -- Last job from freelansim.ru\n'+\
            '\U0001f1f7\U0001f1fa /freelancehunt -- Last job from freelansim.ru\n'+\
-           '\U0001f1fa\U0001f1f8 /freelancecom -- Last job from freelance.com'
+           '\U0001f1fa\U0001f1f8 /freelancecom -- Last job from freelance.com\n' +\
+           '\U0001f1fa\U0001f1f1 /freelanceupper100K -- Last job upper 100K rub'
 
     bot.send_message(message.chat.id, text)
 
@@ -66,6 +67,7 @@ def handle_freelansim(message):
              '\u2692 /freelansim_webdev - Last jobs for Web Developers\n'+\
              '\U0001f307 /freelansim_webdis - Last jobs for Web Designers\n'+\
              '\U0001f6e0 /freelansim_dev - Last jobs for Developers'
+             '\U0001f6e0 /freelansim_upper100 - Last jobs for Developers'
     bot.send_message(message.chat.id, output)
 
 @bot.message_handler(commands=['freelancehunt', 'fch'])
@@ -95,6 +97,10 @@ def handle_freelansim_webdis(msg):
 @bot.message_handler(commands=['freelansim_dev', 'frd'])
 def handle_freelansim_dev(msg):
     send_jobs('freelansim', 'dev', msg.chat.id)
+
+@bot.message_handler(commands=['freelansim_upper100'])
+def handle_freelansim_upper100(msg):
+    send_jobs('freelansim', 'up100', msg.chat.id)
 
 @bot.message_handler(commands=['freelance_adm', 'fca'])
 def handle_freelansim_adm(msg):
@@ -214,6 +220,28 @@ def handle_webdesign_subscribe(message):
              '\nNick: ' + str(message.from_user.username) + \
              '\nLast JOB ID in this category: ' + str(get_last_job('webdis')) + \
              '\nYou subscribed on Web Design category'
+    bot.send_message(message.chat.id, output)
+
+@bot.message_handler(commands=['subscribe_up100','su'])
+def handle_upper100_subscribe(message):
+    # if user doesn't exist
+    if not user_exist(message.from_user.id):
+        Subscription().add_new(message.from_user.username, message.from_user.id, 'up100', session)
+    else: # else update existing subscription
+        try:
+            Subscription().update(message.from_user.id, 'up100', session)
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+
+    output = 'Chat ID: ' + str(message.chat.id) + \
+             '\nUser ID: ' + str(message.from_user.id) + \
+             '\nNick: ' + str(message.from_user.username) + \
+             '\nLast JOB ID in this category: ' + str(get_last_job('up100')) + \
+             '\n*You subscribed on upper 100 000 category*'
     bot.send_message(message.chat.id, output)
 
 @bot.message_handler(content_types=["text"])

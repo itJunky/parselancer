@@ -64,8 +64,64 @@ def parse_category(url, category):
         #else:
         #    print(title)
 
+def parse_category_price(url, category):
+    page = requests.get(url).content
+    soup = BeautifulSoup(page, "html.parser")
+    all_jobs = soup.findAll('article', {"class": "task task_list"})
+
+    for job in all_jobs:
+        title = job.find("div", "task__title").text
+        url = 'http://freelance.habr.com' + job.find("div", "task__title").find("a").get('href')
+
+        if not job_exist(url):
+            date = job.find("span", "params__published-at").text.splitlines()
+            date = str(date[0])
+
+            price_raw = job.find("div", "task__price")
+
+            #Провека цены, выше 100 000 руб
+            try:
+                price = price_raw.find("span", "count").text
+                price_temp = price.replace(' ', '', 1)
+                price_number = 0
+                for t in price_temp.split():
+                    try:
+                        num = int(t)
+                    except ValueError:
+                        pass
+                
+                if(price_number < 100000):
+                    continue
+            except:
+                continue
+
+            text_page = requests.get(url).content
+            text_soup = BeautifulSoup(text_page, "html.parser")
+            text = text_soup.find('div', {'class': 'task__description'}).text
+
+            text_length = 320
+            text = (text[:text_length] + '..') if len(text) > text_length else text
+
+            #print(text, "\n")
+
+            job_row = Job(
+                title = title,
+                date = date,
+                price = price,
+                url = url,
+                category = category,
+                parse_date = datetime.now(),
+                description = text
+            )
+
+            session.add(job_row)
+            session.commit()
+
+        #else:
+        #    print(title)
 
 parse_category(admin_url, 'admin')
 parse_category(webdev_url, 'webdev')
 parse_category(webdis_url, 'webdis')
 parse_category(dev_url, 'dev')
+parse_category_price(default_url, 'up100')
