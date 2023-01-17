@@ -17,9 +17,21 @@ admin_urls = [
     'https://www.weblancer.net/jobs/sistemnoe-administrirovanie-54/',
     'https://www.weblancer.net/jobs/sluzhba-podderzhki-56/'
 ]
-dev_url = 'https://www.weblancer.net/jobs/programmirovanie-po-i-sistem-2/'
-webdev_url = 'https://www.weblancer.net/jobs/veb-programmirovanie-i-sajty-3/'
-webdis_url = 'https://www.weblancer.net/jobs/veb-dizajn-i-interfejsy-1/'
+dev_urls = [
+    'https://www.weblancer.net/jobs/html-verstka-32/',
+    'https://www.weblancer.net/jobs/veb-programmirovanie-31/',
+    'https://www.weblancer.net/jobs/sajty-pod-klyuch-58/'
+    ]
+webdev_urls = [
+    'https://www.weblancer.net/jobs/html-verstka-32/',
+    'https://www.weblancer.net/jobs/veb-programmirovanie-31/',
+    'https://www.weblancer.net/jobs/sajty-pod-klyuch-58/'
+    ]
+webdis_urls = [
+        'https://www.weblancer.net/jobs/dizajn-sajtov-9/',
+        'https://www.weblancer.net/jobs/bannery-8/'
+    ]
+
 
 
 def parse_category(url, category):
@@ -30,7 +42,7 @@ def parse_category(url, category):
 
     for job in all_jobs:
         try:
-            right = job.find('div', class_='col-sm-4 text-sm-right').find('span')
+            right = job.find('div', class_='col-sm-4 text-sm-end').find('span')
             if right.text.startswith('Закрыт'):
                 continue
 
@@ -44,9 +56,10 @@ def parse_category(url, category):
 
         if not job_exist(url):
             try:
-                date = int(right.find('span', class_='time_ago').attrs['data-timestamp'])
+                date=job.find('div', class_='col-sm-4 text-sm-end').find('span',class_='text-muted').find('span')['title']
+                date=date[3:].replace('.','').replace(':','').replace(' ','')
             except:
-                date = ''
+                date=''
             try:
                 text = " ".join(job.find('div', class_='collapse').text.strip().split(" ")[:-1])
             except AttributeError:
@@ -58,13 +71,6 @@ def parse_category(url, category):
                 price = job.find('div', class_='float-right float-sm-none title amount indent-xs-b0').find('span').text.strip()
             except AttributeError:
                 price = None
-
-           #print('\nDate:', date, \
-           #        '\nTitle:', title, \
-           #        '\nText:', text, \
-           #        '\nPrice:', price, \
-           #        '\nURL:', url
-           #)
 
             job_row = Job(
                 title=title,
@@ -79,13 +85,16 @@ def parse_category(url, category):
             session.add(job_row)
             session.commit()
 
-        #else:
-        #    print(title)
 
 
 for admin_url in admin_urls:
     parse_category(admin_url, 'admin')
 
-parse_category(dev_url, 'dev')
-parse_category(webdev_url, 'webdev')
-parse_category(webdis_url, 'webdis')
+for dev_url in dev_urls:
+    parse_category(dev_url, 'dev')
+
+for webdev_url in webdev_urls:
+    parse_category(webdev_url, 'webdev')
+
+for webdis_url in webdis_urls:
+    parse_category(webdis_url, 'webdis')
