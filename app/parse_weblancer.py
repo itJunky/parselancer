@@ -56,10 +56,10 @@ def parse_category(url, category):
 
         if not job_exist(url):
             try:
-                date=job.find('div', class_='col-sm-4 text-sm-end').find('span',class_='text-muted').find('span')['title']
-                date=date[3:].replace('.','').replace(':','').replace(' ','')
+                date = job.find('div', class_='col-sm-4 text-sm-end').find('span',class_='text-muted').find('span')['title']
+                date = date[3:].replace('.','').replace(':','').replace(' ','')
             except:
-                date=''
+                date = ''
             try:
                 text = " ".join(job.find('div', class_='collapse').text.strip().split(" ")[:-1])
             except AttributeError:
