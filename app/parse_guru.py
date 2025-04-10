@@ -1,9 +1,22 @@
 import requests
 from bs4 import BeautifulSoup
 import time
+from datetime import datetime
 
-def parse_guru_jobs():
-    url = "https://www.guru.com/d/jobs/"
+from db import *
+from common import job_exist
+
+from sqlalchemy.orm import sessionmaker
+
+Session = sessionmaker(bind=engine)
+session = Session()
+
+dev_url = "https://www.guru.com/d/jobs/c/programming-development/"
+admin_url = "https://www.guru.com/d/jobs/c/programming-development/sc/database-design-administration/"
+design_url = "https://www.guru.com/d/jobs/c/design-art/"
+copywright_url = "https://www.guru.com/d/jobs/c/writing-translation/"
+
+def parse_guru_jobs(url, category):
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
     }
@@ -55,6 +68,17 @@ def parse_guru_jobs():
             print(f"   Навыки: {', '.join(skills)}")
             print("-" * 80)
 
+            job_row = Job(
+                title = title,
+                date = datetime.now(), # TODO спарсить дату публикации
+                price = budget_info,
+                url = link,
+                category = category,
+                parse_date = datetime.now(),
+                description = description
+            )
+            session.add(job_row)
+            session.commit()
             
     except requests.exceptions.RequestException as e:
         print(f"Ошибка при запросе к сайту: {e}")
@@ -62,5 +86,9 @@ def parse_guru_jobs():
         print(f"Произошла ошибка: {e}")
 
 if __name__ == "__main__":
-    parse_guru_jobs()
+    parse_guru_jobs(admin_url, 'admin')
+   #parse_guru_jobs(dev_url, 'webdev')
+   #parse_guru_jobs(design_url, 'webdis')
+   #parse_guru_jobs(copywright_url, 'writing')
+   #parse_guru_jobs(infosec_url, 'infosec')
 
