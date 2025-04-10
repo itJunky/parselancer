@@ -1,4 +1,0 @@
-sqlalchemy
-#telebot
-PyTelegramBotAPI==2.2.3
-BeautifulSoup4

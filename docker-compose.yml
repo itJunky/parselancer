@@ -1,0 +1,13 @@
+services:
+  parser:
+    build: .
+    volumes:
+      - /opt/parselancer/jobs.db:/workdir/jobs.db
+      - /opt/parselancer/:/workdir/
+#   command: python /workdir/run_parse.sh
+#   command: python /workdir/app/parse_freelancehunt.py
+    command: bash -c "sleep 100001"
+    restart: always
+# sender:
+# bot:
+
