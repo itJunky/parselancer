@@ -8,7 +8,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 # engine = create_engine('sqlite:///:memory:', echo=True)
 db_path = 'sqlite:///' + os.path.join(basedir, '../jobs.db') + '?charset=utf8mb4'
 # engine = create_engine(db_path, echo=True)
-engine = create_engine(db_path, echo=False)
+engine = create_engine(db_path, echo=False, connect_args={"check_same_thread": False},)
 
 class Job(Base):
     __tablename__ = 'job'

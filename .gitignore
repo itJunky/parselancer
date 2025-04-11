@@ -1,2 +1,8 @@
 *.pyc
 .*
+jobs.db*
+*_old
+*_closed.py
+backups/
+app/config.py
+bot/config.py

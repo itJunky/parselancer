@@ -6,7 +6,5 @@ COPY ./requirements.txt .
 RUN useradd -u 1001 -m bot 
 RUN pip install -r requirements.txt
 
-#RUN apt update && apt install -y jq
-
 USER bot
 CMD ["python", "/workdir/run_parse.sh"]
