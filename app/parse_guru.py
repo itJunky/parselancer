@@ -15,6 +15,7 @@ dev_url = "https://www.guru.com/d/jobs/c/programming-development/"
 admin_url = "https://www.guru.com/d/jobs/c/programming-development/sc/database-design-administration/"
 design_url = "https://www.guru.com/d/jobs/c/design-art/"
 copywright_url = "https://www.guru.com/d/jobs/c/writing-translation/"
+infosec_url = "https://www.guru.com/d/jobs/c/programming-development/sc/information-security/"
 
 def parse_guru_jobs(url, category):
     headers = {
@@ -33,10 +34,10 @@ def parse_guru_jobs(url, category):
         job_cards = soup.find_all('div', class_='jobRecord')
         
         if not job_cards:
-            print("Не удалось найти вакансии на странице.")
+            print(f"Не удалось найти вакансии на странице. {url}")
             return
         
-        print(f"Найдено {len(job_cards)} вакансий:\n")
+       #print(f"Найдено {len(job_cards)} вакансий:\n")
         
         # Извлекаем информацию о каждой вакансии
         for index, job in enumerate(job_cards, start=1):
@@ -50,6 +51,8 @@ def parse_guru_jobs(url, category):
             # Ссылка на вакансию
             link = "https://www.guru.com" + job.find('h2').find('a')['href']
             
+            if job_exist(link): continue # skip to next url
+
             # Описание вакансии
             #description = job.find('div', class_='jobDescription').text.strip()
             description = job.find('div', class_='jobRecord__body').text.strip()
@@ -63,9 +66,9 @@ def parse_guru_jobs(url, category):
             # Выводим информацию о вакансии
             print(f"{index}. {title}")
             print(f"   Ссылка: {link}")
-            print(f"   Описание: {description[:150]}...")  # Ограничиваем длину описания
-            print(f"   Бюджет/Сроки: {budget_info}")
-            print(f"   Навыки: {', '.join(skills)}")
+           #print(f"   Описание: {description[:150]}...")  # Ограничиваем длину описания
+           #print(f"   Бюджет/Сроки: {budget_info}")
+           #print(f"   Навыки: {', '.join(skills)}")
             print("-" * 80)
 
             job_row = Job(
@@ -87,8 +90,8 @@ def parse_guru_jobs(url, category):
 
 if __name__ == "__main__":
     parse_guru_jobs(admin_url, 'admin')
-   #parse_guru_jobs(dev_url, 'webdev')
-   #parse_guru_jobs(design_url, 'webdis')
-   #parse_guru_jobs(copywright_url, 'writing')
-   #parse_guru_jobs(infosec_url, 'infosec')
+    parse_guru_jobs(dev_url, 'webdev')
+    parse_guru_jobs(design_url, 'webdis')
+    parse_guru_jobs(copywright_url, 'writing')
+    parse_guru_jobs(infosec_url, 'infosec')
 

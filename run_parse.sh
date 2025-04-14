@@ -1,4 +1,5 @@
 #!/bin/bash
 
 python ./app/parse_guru.py
-sleep 30
+python ./app/parse_flru.py
+#sleep 60

@@ -9,8 +9,7 @@ session = Session()
 def job_exist(job_link):
     cur = session.execute(text("SELECT url FROM job"))
     links = cur.fetchall()
-    # print links
     if any(job_link in s[0] for s in links):
-       # print('-Job in DataBase-')
+   #    print(f'-Job in DataBase- {job_link}')
         return True
     else: return False
