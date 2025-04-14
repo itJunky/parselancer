@@ -2,11 +2,17 @@ services:
   parser:
     build: .
     volumes:
-      - /opt/parselancer/jobs.db:/workdir/jobs.db
       - /opt/parselancer/:/workdir/
-    command: /workdir/run_parse.sh
+    command: bash -c "/workdir/run_parse.sh; sleep 30"
 #   command: bash -c "sleep 100001"
     restart: always
-# sender:
+  sender:
+    build: .
+    volumes:
+      - /opt/parselancer/:/workdir/
+    command: bash -c "python bot/send_alerts.py; sleep 20"
+    restart: always
 # bot:
+#   command: bash -c "sleep 100001"
+#   restart: always
 
