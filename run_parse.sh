@@ -2,4 +2,4 @@
 
 python ./app/parse_guru.py
 python ./app/parse_flru.py
-#sleep 60
+python ./app/parse_weblancer.py

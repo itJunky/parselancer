@@ -64,7 +64,8 @@ def parse_guru_jobs(url, category):
             skills = [skill.text.strip() for skill in job.find_all('a', class_='skillName')]
             
             # Выводим информацию о вакансии
-            print(f"{index}. {title}")
+            #print(f"{index}. {title}")
+            print(f"{title}")
             print(f"   Ссылка: {link}")
            #print(f"   Описание: {description[:150]}...")  # Ограничиваем длину описания
            #print(f"   Бюджет/Сроки: {budget_info}")
