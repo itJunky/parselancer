@@ -101,3 +101,6 @@ def parse_fl_projects(url, category):
 
 if __name__ == "__main__":
     parse_fl_projects(dev_url, 'webdev')
+    parse_fl_projects(design_url, 'webdis')
+    parse_fl_projects(copywright_url, 'writing')
+

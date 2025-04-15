@@ -72,7 +72,7 @@ for user in users:
                                
             #dscr = job.description[:200]
             #print(f'DSCR: {dscr}')
-            print(repr(dscr))
+            #print(repr(dscr))
             if not dscr: text_descr = '-'
             else:
                 text_descr = str(dscr)
