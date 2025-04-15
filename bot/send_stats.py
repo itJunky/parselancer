@@ -1,10 +1,14 @@
 from db import *
+import config
+import telebot
 
 from datetime import datetime, timedelta
 from sqlalchemy.orm import sessionmaker
 
 Session = sessionmaker(bind=engine)
 session = Session()
+
+bot = telebot.TeleBot(config.token)
 
 def job_is_newer_than_day(date):
     now = datetime.now()
@@ -24,7 +28,10 @@ jd_wbl = 0
 jh_wbl = 0
 jd_guru = 0
 jh_guru = 0
+
+jobs_count = session.query(Job).count()
 j = session.query(Job.id, Job.parse_date, Job.url).all()
+
 for i in j:
     if job_is_newer_than_day(i[1]): 
         jobs_at_this_day += 1
@@ -44,6 +51,18 @@ for i in j:
             jh_guru += 1
 
 
+msg_text = f'{jobs_count}\t работ собрано за всё время \n' +\
+           f'{jobs_at_this_day}\t задач собрано за последние сутки\n' +\
+           f'{jobs_at_this_hour} задач собрано за последний час\n'+\
+            '---\n' +\
+           f'{jh_flru}/{jd_flru} задач опубликовало за час/день fl.ru.\n' +\
+           f'{jh_wbl}/{jd_wbl} задач опубликовал за час/день weblancer.net.\n' +\
+           f'{jh_guru}/{jd_guru} задач опубликовал за час/день guru.com.'
+
+bot.send_message(-1001420206323, msg_text)
+#bot.send_message(6844185021, msg_text)
+
+print(f'Всего работ собрано: {jobs_count}')
 print(f'За последние сутки с фриланс бирж собрано задач: \t{jobs_at_this_day}')
 print(f'За последний час с фриланс бирж собрано задач: \t\t{jobs_at_this_hour}')
 print('-' * 30)
