@@ -1,18 +1,31 @@
 services:
+  template_srvc:
+    build: .
+    volumes:
+      - /opt/parselancer/:/workdir/
+    command: bash -c "sleep 100001"
+    restart: always
+
   parser:
-    build: .
-    volumes:
-      - /opt/parselancer/:/workdir/
+    extends:
+      service: template_srvc
     command: bash -c "/workdir/run_parse.sh; sleep 30"
-#   command: bash -c "sleep 100001"
-    restart: always
+
   sender:
-    build: .
-    volumes:
-      - /opt/parselancer/:/workdir/
+    extends:
+      service: template_srvc
     command: bash -c "python bot/send_alerts.py; sleep 20"
-    restart: always
-# bot:
-#   command: bash -c "sleep 100001"
-#   restart: always
+
+# cron:
+#   build: .
+#   volumes:
+#     - /opt/parselancer/:/workdir/
+#     - /opt/parselancer/cronjob:/etc/cron.d/cronjob
+#   command: crontab /etc/cron.d/cronjob && cron && tail -f /var/log/cron.log
+#    command: bash -c "sleep 100001"
+
+  bot:
+    extends:
+      service: template_srvc
+    command: bash -c "sleep 100001"
 
