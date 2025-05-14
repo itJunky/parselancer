@@ -2,11 +2,13 @@
 
 
 from db import *
+import time
 import telebot
 import config
 
-bot = telebot.TeleBot(config.token)
+bot = telebot.TeleBot(config.token_prod)
 
+from sqlalchemy import text
 from sqlalchemy.orm import sessionmaker, scoped_session
 session = scoped_session(sessionmaker(bind=engine))
 
@@ -15,7 +17,23 @@ from get_stats import get_stats_by, get_stats_subscribers
 # Обработчик команд '/start' и '/help'.
 @bot.message_handler(commands=['start', 'help'])
 def handle_start_help(message):
-    start_text = 'hello\nsay /list for site list'
+    print('Have new user')
+    try:
+        referral = message.text.split('/start ')[1]
+        print(referral)
+        start_text = f'Похоже ты пришёл от {referral}.\n'
+    except Exception as e:
+        start_text = f'Мы уже познакомились\n'
+
+    # Проверить что юзер новый.
+    if user_exist(message.chat.id):
+        start_text += 'Для оформления подписки необходимо пополнить баланс.\n'
+    # Сообщить о тестовом периоде
+    else:
+        print('else here')
+        start_text += 'Рад сообщить, что Вам доступен тестовый период длительностью в 7 дней.\n'
+        start_text += 'За это время Вы можете изучить доступные биржи и категории работ, а так же подписаться на уведомления по ним в случае появления новых заданий.'
+    # Либо предложить пополнить баланс
     bot.send_message(message.chat.id, start_text)
 
 @bot.message_handler(commands=['wrk', 'list', 'cmd'])
@@ -226,7 +244,7 @@ def repeat_all_messages(message):  # Название функции не игр
 
 #####################################################################
 def user_exist(user_id):
-    cur = session.execute("SELECT id FROM users WHERE tele_id = '{}'".format(user_id))
+    cur = session.execute(text("SELECT id FROM users WHERE tele_id = '{}'".format(user_id)))
     try:
         output = 'Checked ID: {} \
                  \nExisted User ID: {} \
@@ -296,7 +314,12 @@ def fetch_jobs(site, category):
 
 
 if __name__ == '__main__':
-    print("ParceLancer Started")
 
-    bot.polling(none_stop=True)
-    # bot.polling(none_stop=False)
+    while True:
+        print("ParceLancer Started")
+        try:
+            bot.polling(none_stop=True)
+        except Exception as e:
+            print(f'Сломался: {e} : {e.__cause__}')
+
+        time.sleep(1)

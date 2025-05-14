@@ -121,12 +121,12 @@ for user in users:
                     SELECT id FROM job ORDER BY id DESC
                     """
             )
-            print(query)
+            #print(query)
 
             # TODO Поменять ему последнюю работу
             #cur = session.execute(sqlalchemy.sql.text("SELECT id FROM job ORDER BY id DESC"))
             cur = session.execute(query)
-            print(cur.fetchone()[0])
+            #print(cur.fetchone()[0])
             query = sqlalchemy.sql.text(
                     """
                     UPDATE users SET last_job = '{}'

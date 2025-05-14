@@ -55,11 +55,12 @@ msg_text = f'{jobs_count}\t работ собрано за всё время \n'
            f'{jobs_at_this_day}\t задач собрано за последние сутки\n' +\
            f'{jobs_at_this_hour} задач собрано за последний час\n'+\
             '---\n' +\
-           f'{jh_flru}/{jd_flru} задач опубликовало за час/день fl.ru.\n' +\
-           f'{jh_wbl}/{jd_wbl} задач опубликовал за час/день weblancer.net.\n' +\
-           f'{jh_guru}/{jd_guru} задач опубликовал за час/день guru.com.'
+           f'{jh_flru}/{jd_flru} задач опубликовали за час/день на fl.ru.\n' +\
+           f'{jh_wbl}/{jd_wbl} задач опубликовали за час/день на weblancer.net.\n' +\
+           f'{jh_guru}/{jd_guru} задач опубликовали за час/день на guru.com.\n'+\
+           f'#stats #hourly'
 
-bot.send_message(-1001420206323, msg_text)
+bot.send_message(-1001420206323, msg_text, parse_mode='HTML')
 #bot.send_message(6844185021, msg_text)
 
 print(f'Всего работ собрано: {jobs_count}')
