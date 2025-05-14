@@ -11,10 +11,26 @@ session = Session()
 
 main_url = 'https://www.fl.ru'
 
-dev_url = 'https://www.fl.ru/projects/category/programmirovanie/'
-design_url = 'https://www.fl.ru/projects/category/dizajn/'
+dev_urls = [
+    'https://www.fl.ru/projects/category/programmirovanie/',
+    'https://www.fl.ru/projects/category/saity/',
+    'https://www.fl.ru/projects/category/crypto-i-blockchain/',
+    'https://www.fl.ru/projects/category/ai-iskusstvenniy-intellekt/',
+    'https://www.fl.ru/projects/category/internet-magaziny/',
+    'https://www.fl.ru/projects/category/games/unity/',
+    'https://www.fl.ru/projects/category/games/unreal-engine/',
+    'https://www.fl.ru/projects/category/games/heroengine/',
+    'https://www.fl.ru/projects/category/brauzery/'
+]
+design_urls = [
+    'https://www.fl.ru/projects/category/dizajn/',
+    'https://www.fl.ru/projects/category/risunki-i-illustracii/',
+    'https://www.fl.ru/projects/category/3d-grafika/',
+    'https://www.fl.ru/projects/category/audio-video-photo/',
+    'https://www.fl.ru/projects/category/firmennyi-stil/'
+]
 copywright_url = 'https://www.fl.ru/projects/category/teksty/'
-
+qa_url = 'https://www.fl.ru/projects/category/games/testirovanie-igr-qa/'
 
 def parse_fl_projects(url, category):
     headers = {
@@ -29,7 +45,7 @@ def parse_fl_projects(url, category):
         projects = soup.find_all('div', class_='b-post__grid')
         
         if not projects:
-            print("Не удалось найти проекты на странице.")
+            print(f"Не удалось найти проекты на странице: {url}")
             return
         
         for project in projects:
@@ -100,7 +116,12 @@ def parse_fl_projects(url, category):
 #        print(f"Произошла ошибка: {e}")
 
 if __name__ == "__main__":
-    parse_fl_projects(dev_url, 'webdev')
-    parse_fl_projects(design_url, 'webdis')
+    for url in dev_urls:
+        parse_fl_projects(url, 'dev')
+
+    for url in design_urls:
+        parse_fl_projects(url, 'design')
+
     parse_fl_projects(copywright_url, 'writing')
+    parse_fl_projects(qa_url, 'qa')
 

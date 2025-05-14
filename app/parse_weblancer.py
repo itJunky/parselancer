@@ -20,13 +20,41 @@ admin_urls = [
     'https://www.weblancer.net/jobs/sistemnoe-administrirovanie-54/',
     'https://www.weblancer.net/jobs/sluzhba-podderzhki-56/'
 ]
-#dev_url = 'https://www.weblancer.net/jobs/programmirovanie-po-i-sistem-2/'
-#TODO Добавить ещё 5 урлов про программирование
 dev_urls = [
-    'https://www.weblancer.net/freelance/prikladnoe-po-23/'
+    'https://www.weblancer.net/freelance/veb-programmirovanie-31/',
+    'https://www.weblancer.net/freelance/html-verstka-32/',
+    'https://www.weblancer.net/freelance/internet-magazini-61/',
+    'https://www.weblancer.net/freelance/saiti-pod-klyuch-58/',
+    'https://www.weblancer.net/freelance/1s-programmirovanie-83/',
+    'https://www.weblancer.net/freelance/mobilnie-prilozheniya-28/',
+    'https://www.weblancer.net/freelance/prikladnoe-po-23/',
+    'https://www.weblancer.net/freelance/razrabotka-igr-26/',
+    'https://www.weblancer.net/freelance/sistemnoe-programmirovanie-24/'
 ]
-webdev_url = 'https://www.weblancer.net/jobs/veb-programmirovanie-i-sajty-3/'
-webdis_url = 'https://www.weblancer.net/jobs/veb-dizajn-i-interfejsy-1/'
+qa_urls = [
+    'https://www.weblancer.net/freelance/testirovanie-po-29/',
+    'https://www.weblancer.net/freelance/testirovanie-saitov-37/'
+]
+#webdev_url = 'https://www.weblancer.net/jobs/veb-programmirovanie-i-sajty-3/'
+#webdis_url = 'https://www.weblancer.net/jobs/veb-dizajn-i-interfejsy-1/'
+design_urls = [
+    'https://www.weblancer.net/freelance/banneri-8/',
+    'https://www.weblancer.net/freelance/dizain-interfeisov-i-igr-13/',
+    'https://www.weblancer.net/freelance/dizain-mobilnikh-prilozhenii-82/',
+    'https://www.weblancer.net/freelance/dizain-saitov-9/',
+    'https://www.weblancer.net/freelance/ikonki-i-piksel-art-14/',
+    'https://www.weblancer.net/freelance/3d-grafika-12/',
+    'https://www.weblancer.net/freelance/illyustratsii-i-risunki-11/',
+    'https://www.weblancer.net/freelance/obrabotka-fotografii-21/',
+    'https://www.weblancer.net/freelance/verstka-poligrafii-10/',
+    'https://www.weblancer.net/freelance/dizain-produktsii-18/',
+    'https://www.weblancer.net/freelance/logotipi-i-znaki-7/',
+    'https://www.weblancer.net/freelance/naruzhnaya-reklama-17/',
+    'https://www.weblancer.net/freelance/firmennii-stil-19/',
+    'https://www.weblancer.net/freelance/prezentatsii-60/',
+    'https://www.weblancer.net/freelance/animatsiya-39/',
+    'https://www.weblancer.net/freelance/videomontazh-41/'
+]
 
 
 def parse_category(url, category):
@@ -39,8 +67,9 @@ def parse_category(url, category):
         # print(page)
         # print(all_jobs_content)
         # print(all_jobs[0])
-        print(len(all_jobs))
+        # print(len(all_jobs))
         # return
+        pass
 
     for job in all_jobs:
         # time.sleep(0.200)
@@ -61,6 +90,7 @@ def parse_category(url, category):
         
         try:
             price = job.find('div', class_='text-success').text
+            if len(price) < 2: price = None
         except AttributeError:
             price = None
 
@@ -76,7 +106,7 @@ def parse_category(url, category):
                 '\nTitle:', title, \
                 '\nText:', text, \
                 '\nPrice:', price, \
-                '\nURL:', url
+                '\nURL:', link
             )
             print('.' * 80)
 
@@ -84,7 +114,7 @@ def parse_category(url, category):
             title=title,
             date=date,
             price=price,
-            url=url,
+            url=link,
             category=category,
             parse_date=datetime.now(),
             description=text
@@ -98,12 +128,18 @@ def parse_category(url, category):
         #    print(title)
 
 
-#for admin_url in admin_urls:
-#    parse_category(admin_url, 'admin')
+for admin_url in admin_urls:
+    parse_category(admin_url, 'admin')
+
 for url in dev_urls:
     parse_category(url, 'dev')
 
+for url in design_urls:
+    parse_category(url, 'design')
+
+for url in qa_urls:
+    parse_category(url, 'qa')
+
 #parse_category(webdev_url, 'webdev')
 #parse_category(webdis_url, 'webdis')
-
 
