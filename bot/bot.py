@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-
 from db import *
 import time
 import telebot
+from telebot import types
 import config
 
 bot = telebot.TeleBot(config.token_prod)
@@ -34,7 +34,133 @@ def handle_start_help(message):
         start_text += 'Рад сообщить, что Вам доступен тестовый период длительностью в 7 дней.\n'
         start_text += 'За это время Вы можете изучить доступные биржи и категории работ, а так же подписаться на уведомления по ним в случае появления новых заданий.'
     # Либо предложить пополнить баланс
-    bot.send_message(message.chat.id, start_text)
+
+    markup = types.InlineKeyboardMarkup(row_width=3)
+    btn1 = types.InlineKeyboardButton("📋 Подписки", callback_data='subscriptions')
+    btn2 = types.InlineKeyboardButton("💵 Оплата", callback_data='payment')
+    btn3 = types.InlineKeyboardButton("🪪 О боте", callback_data='about')
+    markup.add(btn1, btn2, btn3)
+
+    bot.send_message(message.chat.id, start_text, reply_markup=markup)
+
+
+# === Приём сообщений от пользователей ===
+@bot.message_handler(func=lambda message: message.chat.id != config.SUPPORT_CHAT_ID)
+def handle_user_message(message):
+    # Пересылаем сообщение в чат поддержки
+    forwarded = bot.forward_message(config.SUPPORT_CHAT_ID, message.chat.id, message.id)
+
+    # Сохраняем связь: id пересланного сообщения -> id пользователя
+    message_to_user[forwarded.id] = message.chat.id
+
+    bot.reply_to(message, "Спасибо за ваше сообщение! Мы постараемся ответить как можно скорее.")
+
+
+# === Обработка ответов в чате поддержки ===
+@bot.message_handler(func=lambda message: message.chat.id == config.SUPPORT_CHAT_ID and message.reply_to_message is not None)
+def handle_support_reply(message):
+    # Получаем ID сообщения, на которое ответили
+    replied_message_id = message.reply_to_message.id
+
+    # Ищем ID пользователя, которому нужно отправить ответ
+    if replied_message_id in message_to_user:
+        user_id = message_to_user[replied_message_id]
+
+        try:
+            # Отправляем текст ответа пользователю
+            bot.send_message(user_id, f"Ответ от тех. поддержки бота:\n\n{message.text}")
+        except Exception as e:
+            bot.send_message(SUPPORT_CHAT_ID, f"[Ошибка] Не удалось отправить ответ пользователю: {e}")
+    else:
+        bot.send_message(SUPPORT_CHAT_ID, "[Ошибка] Не найдено сообщение для ответа.")
+
+
+# Обработчик кнопок
+@bot.callback_query_handler(func=lambda call: True)
+def handle_callback(call):
+    if call.data == 'subscriptions':
+        subscriptions_handler(call.message.chat.id, call.id)
+    elif call.data == 'payment':
+        payments_handler(call.message.chat.id, call.id)
+    elif call.data == 'about':
+        about_handler(call.message.chat.id, call.id)
+    elif call.data == 'category':
+        category_handler(call.message.chat.id, call.id)
+    elif call.data == 'jobcenter':
+        jobcenter_handler(call.message.chat.id, call.id)
+    elif call.data == 'feedback':
+        feedback_handler(call.message.chat.id, call.id)
+    elif call.data == 'creditcard':
+        creditcard_handler(call.message.chat.id, call.id)
+    elif call.data == 'cryptcoin':
+        cryptcoin_handler(call.message.chat.id, call.id)
+    elif call.data == 'tgstars':
+        tgstars_handler(call.message.chat.id, call.id)
+
+
+def subscriptions_handler(userid, callid):
+    bot.answer_callback_query(callid, "Вы выбрали Подписки")
+
+    markup = types.InlineKeyboardMarkup(row_width=2)
+    btn1 = types.InlineKeyboardButton("📂 Выбрать категории", callback_data='category')
+    btn2 = types.InlineKeyboardButton("🏢 Выбрать биржи", callback_data='jobcenter')
+    markup.add(btn1, btn2)
+
+    bot.send_message(userid, "Информация о подписках...", reply_markup=markup)
+
+def payments_handler(userid, callid):
+    bot.answer_callback_query(callid, "Вы выбрали Оплату")
+
+    markup = types.InlineKeyboardMarkup(row_width=3)
+    btn1 = types.InlineKeyboardButton("💳 Картой", callback_data='creditcard')
+    btn2 = types.InlineKeyboardButton("🏵 Криптой", callback_data='cryptcoin')
+    btn3 = types.InlineKeyboardButton("⭐️ ТГ звёздами", callback_data='tgstars')
+    markup.add(btn1, btn2, btn3)
+
+    bot.send_message(userid, "Информация об оплате...", reply_markup=markup)
+
+def about_handler(userid, callid):
+    bot.answer_callback_query(callid, "Вы выбрали О боте")
+    
+    markup = types.InlineKeyboardMarkup(row_width=3)
+    btn1 = types.InlineKeyboardButton("📢 Канал", url='https://t.me/FreeLanceGet')
+    btn2 = types.InlineKeyboardButton("👥 Чат", url='https://t.me/getFreelanceChat')
+    btn3 = types.InlineKeyboardButton("👨‍👧‍👧 Связаться с автором", callback_data='feedback')
+    markup.add(btn1, btn2, btn3)
+
+    bot.send_message(userid, "Информация о боте...", reply_markup=markup)
+
+def category_handler(userid, callid):
+    bot.answer_callback_query(callid, 'Выбранo Категории')
+    bot.send_message(userid, 'Выберите подходящую категорию работ, о которых хтите узнавать первым.')
+
+def jobcenter_handler(userid, callid):
+    bot.answer_callback_query(callid, 'Выбрана Обратная связь')
+    bot.send_message(userid, 'Выберите биржи, с которых хотите получать актуальные задачи.')
+
+# Словарь для хранения связи: {message_id_в_чате_поддержки: user_id}
+# TODO перенести в БД
+message_to_user = {}
+def feedback_handler(userid, callid):
+    bot.answer_callback_query(callid, 'Выбрана Обратная связь')
+    bot.send_message(userid, 'Я готов передать все ваши сообщения своему владельцу.')
+
+def creditcard_handler(userid, callid):
+    bot.answer_callback_query(callid, 'Выбрана Оплата картой')
+    bot.send_message(userid, 'Этот функционал ещё разрабатывается.')
+
+def cryptcoin_handler(userid, callid):
+    bot.answer_callback_query(callid, 'Выбрана Оплата криптой')
+    bot.send_message(userid, 'Этот функционал ещё разрабатывается.')
+
+def tgstars_handler(userid, callid):
+    bot.answer_callback_query(callid, 'Выбрана Оплата ТГ звёздами')
+    bot.send_message(userid, 'Этот функционал ещё разрабатывается.')
+
+
+
+
+### OLD CODE ###
 
 @bot.message_handler(commands=['wrk', 'list', 'cmd'])
 def handle_list(message):
