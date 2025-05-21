@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine
-from sqlalchemy import Table, Column, Integer, String, MetaData, ForeignKey, DateTime
+from sqlalchemy import Table, Column, Integer, String, MetaData, ForeignKey, DateTime, Date
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session
 
@@ -9,6 +9,7 @@ from config import DB_PATH
 
 import random
 import string
+from datetime import date, datetime, timedelta
 import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 # engine = create_engine('sqlite:///:memory:', echo=True)
@@ -45,6 +46,8 @@ class User(Base):
         session.commit()
 
         Referral().make_reflink(user_row.id, ref_id)
+        #Bill().__init__(userid=user_row.id)
+        Bill().create(user_row.id)
         
     def get_reflink(self):
         row = session.query(Referral).filter(Referral.id == self.id).first()
@@ -112,3 +115,109 @@ class Referral(Base):
         # это 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
         letters = string.ascii_letters
         return ''.join(random.choice(letters) for _ in range(length))
+
+    # TODO подумать как начислять остаток когда рефералов меньше 10
+    def get_ref_parents(self, userid):
+        res = []
+        ref = self.get_ref_parrent_by_id(userid) 
+        res.append(ref.referrer)
+        for i in range(0,9):
+            print(f'REF parents: {ref.id}, {ref.referrer}')
+            ref = self.get_ref_parrent_by_id(ref.referrer) 
+            if ref.referrer == 0:
+                break
+            if ref:
+                res.append(ref.referrer)
+            else:
+                break
+        return res
+
+    def get_ref_parrent_by_id(self, userid):
+        ref = session.query(Referral).filter(Referral.id==userid).first()
+        return ref
+
+class Bill(Base):
+    __tablename__ = 'bill'
+    # user id
+    id = Column(Integer, primary_key=True)
+    money_count = Column(Integer)
+    payed_till = Column(DateTime, default=datetime.utcnow())
+    
+    def create(self, userid):
+        self.id = userid
+        self.money_count = 0
+        # TODO прибавлять неделю тестового периода
+        self.payed_till = datetime.utcnow()
+
+        session.add(self)
+        session.commit()
+    
+    def payweek(self, userid):
+        user = session.query(User).filter(User.tele_id==userid).first()
+        bill = session.query(Bill).filter(Bill.id==user.id).first()
+        print(f'Bill: {bill.id}, {bill.payed_till}')
+
+        if self.enough_money(userid, 7):
+            bill.money_count -= 7
+            bill.payed_till = datetime.utcnow() + timedelta(weeks=1)
+            session.commit()
+            # TODO посчитать реферальные отчисления
+            self.pay_to_refs(user.id, 7)
+            return True
+        else:
+            return False
+
+    def paymonth(self, userid):
+        user = session.query(User).filter(User.tele_id==userid).first()
+        bill = session.query(Bill).filter(Bill.id==user.id).first()
+        print(f'Bill: {bill.id}, {bill.payed_till}')
+
+        if self.enough_money(userid, 30):
+            bill.money_count -= 30
+            bill.payed_till = datetime.utcnow() + timedelta(weeks=4)
+            session.commit()
+            # TODO посчитать реферальные отчисления
+            self.pay_to_refs(user.id, 30)
+            return True
+        else:
+            return False
+
+    def payyear(self, userid):
+        user = session.query(User).filter(User.tele_id==userid).first()
+        bill = session.query(Bill).filter(Bill.id==user.id).first()
+        print(f'Bill: {bill.id}, {bill.payed_till}')
+
+        if self.enough_money(userid, 350):
+            bill.money_count -= 350
+            bill.payed_till = datetime.utcnow() + timedelta(weeks=53)
+            session.commit()
+            # TODO посчитать реферальные отчисления
+            self.pay_to_refs(user.id, 350)
+            return True
+        else:
+            return False
+
+    def pay_to_refs(self, userid, count):
+        parents = Referral().get_ref_parents(userid)
+        # На старте 2/3 отдаём в реф программу
+        stack = (count/3)*2
+        print(stack)
+        # TODO выплатить всем рефам
+        for parent in parents:
+            # Половину стакана отсыпаем старшему рефу 
+            print(parent)
+            bill = session.query(Bill).filter(Bill.id==parent).first()
+            bill.money_count += stack/2
+            stack = stack/2
+
+        session.commit()
+
+    def enough_money(self, tguserid, min_money):
+        user = session.query(User).filter(User.tele_id==tguserid).first()
+        bill = session.query(Bill).filter(Bill.id==user.id).first()
+        print(f'enough: {bill.id}')
+        if bill.money_count > min_money:
+            return True
+        else:
+            return False
+
