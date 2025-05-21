@@ -22,10 +22,10 @@ services:
 #     - /opt/parselancer/:/workdir/
 #     - /opt/parselancer/cronjob:/etc/cron.d/cronjob
 #   command: crontab /etc/cron.d/cronjob && cron && tail -f /var/log/cron.log
-#    command: bash -c "sleep 100001"
 
   bot:
     extends:
       service: template_srvc
-    command: bash -c "sleep 100001"
+    command: bash -c "python bot/bot.py"
+    restart: always
 
