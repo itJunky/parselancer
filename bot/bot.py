@@ -2,6 +2,7 @@
 
 from db import *
 import time
+from datetime import datetime, timezone
 import telebot
 from telebot import types
 import config
@@ -89,6 +90,12 @@ def handle_callback(call):
         subscriptions_handler(call.message.chat.id, call.id)
     elif call.data == 'payment':
         payments_handler(call.message.chat.id, call.id)
+    elif call.data == 'payweek':
+        payweek_handler(call.message.chat.id, call.id)
+    elif call.data == 'paymonth':
+        paymonth_handler(call.message.chat.id, call.id)
+    elif call.data == 'payyear':
+        payyear_handler(call.message.chat.id, call.id)
     elif call.data == 'about':
         about_handler(call.message.chat.id, call.id)
     elif call.data == 'category':
@@ -120,26 +127,67 @@ def subscriptions_handler(userid, callid):
 
 def payments_handler(userid, callid):
     bot.answer_callback_query(callid, "Вы выбрали Оплату")
-    # TODO Вывод баланса в тугриках
-    # TODO Отображение даты до которой оплачен тариф
-    text = 'Информация об оплате.\n' + \
-           'Баланс: ' + '0' + '\n' + \
-           'Оплачено до: ' + '11.22.33'  
+    # Вывод баланса в тугриках
+    # Отображение даты до которой оплачен тариф
+    user = session.query(User).filter(User.tele_id == userid).first()
+    bill = session.query(Bill).filter(Bill.id == user.id).first()
+    payed_till = str(bill.payed_till).split(".")[0]
+    # Подсвечивать красным или зелёным, если оплачено
+    text = 'Информация о балансе.\n\n' + \
+           f'Баланс: {bill.money_count} ➿ фланков\n' + \
+           f'Оплачено до: {payed_till}'  
 
-    markup = types.InlineKeyboardMarkup([
-        [
-            types.InlineKeyboardButton("💳 Картой", callback_data='creditcard'),
-            types.InlineKeyboardButton("🏵 Криптой", callback_data='cryptcoin'),
-            types.InlineKeyboardButton("⭐️ ТГ звёздами", callback_data='tgstars')
-        ],
-        [
-            types.InlineKeyboardButton("📇 Реферальная программа", callback_data='referral')
-        ]
-    ])
+    if bill.payed_till.astimezone(timezone.utc) < datetime.now(timezone.utc):
+        markup = types.InlineKeyboardMarkup([
+            [
+                types.InlineKeyboardButton("💳 Картой", callback_data='creditcard'),
+                types.InlineKeyboardButton("🏵 Криптой", callback_data='cryptcoin'),
+                types.InlineKeyboardButton("⭐️ ТГ звёздами", callback_data='tgstars')
+            ],
+            [
+                types.InlineKeyboardButton("--- Выберите подписку: ---", callback_data=' ')
+            ],
+            [
+                types.InlineKeyboardButton("На неделю", callback_data='payweek'),
+                types.InlineKeyboardButton("На месяц", callback_data='paymonth'),
+                types.InlineKeyboardButton("На год", callback_data='payyear')
+            ],
+            [
+                types.InlineKeyboardButton("📇 Реферальная программа", callback_data='referral')
+            ]
+        ])
+    else:
+        print('DOESNT NEED TO PAY')
+        print(f'{bill.payed_till.astimezone(timezone.utc)} < {datetime.now(timezone.utc)}')
+        
+
+        markup = types.InlineKeyboardMarkup([
+            [
+                types.InlineKeyboardButton("💳 Картой", callback_data='creditcard'),
+                types.InlineKeyboardButton("🏵 Криптой", callback_data='cryptcoin'),
+                types.InlineKeyboardButton("⭐️ ТГ звёздами", callback_data='tgstars')
+            ],
+            [
+                types.InlineKeyboardButton("📇 Реферальная программа", callback_data='referral')
+            ]
+        ])
 
     bot.send_message(userid, text, reply_markup=markup)
 
+def payweek_handler(userid, callid):
+    bot.answer_callback_query(callid, "Приобретаю неделю премиума")
+    Bill().payweek(userid)
+    payments_handler(userid, callid)
 
+def paymonth_handler(userid, callid):
+    bot.answer_callback_query(callid, "Приобретаю месяц премиума")
+    Bill().paymonth(userid)
+    payments_handler(userid, callid)
+
+def payyear_handler(userid, callid):
+    bot.answer_callback_query(callid, "Приобретаю год премиума")
+    Bill().payyear(userid)
+    payments_handler(userid, callid)
 def referral_handler(tguserid, callid):
     bot.answer_callback_query(callid, "Выбрана реферрвльная прогграмма")
     # получить ник моего реферала
@@ -156,7 +204,13 @@ def referral_handler(tguserid, callid):
            'Получено от реферралов: тугрики\n' + \
            f'Моя реферральная ссылка: {reflink}'
 
-    bot.send_message(tguserid, text)
+    markup = types.InlineKeyboardMarkup([
+        [
+            types.InlineKeyboardButton("⬅️ Назад", callback_data='payment')
+        ]
+    ])
+
+    bot.send_message(tguserid, text, reply_markup=markup)
 
 
 def about_handler(userid, callid):
@@ -276,7 +330,7 @@ def fetch_jobs(site, category):
 
 if __name__ == '__main__':
 
-    from IPython import embed
+    #from IPython import embed
 
     while True:
         print("ParceLancer Started")
