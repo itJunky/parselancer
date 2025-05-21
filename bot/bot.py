@@ -17,22 +17,29 @@ from get_stats import get_stats_by, get_stats_subscribers
 # Обработчик команд '/start' и '/help'.
 @bot.message_handler(commands=['start', 'help'])
 def handle_start_help(message):
-    print('Have new user')
+    print(f'Have new user? {message.chat.id}')
+    ref_id = 0 # Если рефералов нет
     try:
-        referral = message.text.split('/start ')[1]
-        print(referral)
-        start_text = f'Похоже ты пришёл от {referral}.\n'
+        reflink = message.text.split('/start ')[1]
+        ref_id, ref_name = get_referral_id_by_reflink(reflink)
+        print(f'REF: {reflink}')
+        print(f'ID: {ref_id}')
+        start_text = f'Похоже ты пришёл от {ref_name}.\n'
     except Exception as e:
         start_text = f'Мы уже познакомились\n'
 
     # Проверить что юзер новый.
     if user_exist(message.chat.id):
+        print('Юзер уже есть')
         start_text += 'Для оформления подписки необходимо пополнить баланс.\n'
     # Сообщить о тестовом периоде
     else:
-        print('else here')
-        start_text += 'Рад сообщить, что Вам доступен тестовый период длительностью в 7 дней.\n'
-        start_text += 'За это время Вы можете изучить доступные биржи и категории работ, а так же подписаться на уведомления по ним в случае появления новых заданий.'
+        print('Юзерa ещё нет')
+        User().add_new(message.from_user.username, message.from_user.id, ref_id)
+        Subscription().add_new(message.from_user.id, 'TESTSUBS')
+        # TODO функция создания юзера (сохранение в БД, создание рефлинка)
+        start_text += 'Рад сообщить, что тебе доступен тестовый период длительностью в 7 дней.\n'
+        start_text += 'За это время ты сможешь изучить доступные биржи и категории работ, а так же подписаться на уведомления по ним в случае появления новых заданий.'
     # Либо предложить пополнить баланс
 
     markup = types.InlineKeyboardMarkup(row_width=3)
@@ -96,6 +103,8 @@ def handle_callback(call):
         cryptcoin_handler(call.message.chat.id, call.id)
     elif call.data == 'tgstars':
         tgstars_handler(call.message.chat.id, call.id)
+    elif call.data == 'referral':
+        referral_handler(call.message.chat.id, call.id)
 
 
 def subscriptions_handler(userid, callid):
@@ -108,16 +117,47 @@ def subscriptions_handler(userid, callid):
 
     bot.send_message(userid, "Информация о подписках...", reply_markup=markup)
 
+
 def payments_handler(userid, callid):
     bot.answer_callback_query(callid, "Вы выбрали Оплату")
+    # TODO Вывод баланса в тугриках
+    # TODO Отображение даты до которой оплачен тариф
+    text = 'Информация об оплате.\n' + \
+           'Баланс: ' + '0' + '\n' + \
+           'Оплачено до: ' + '11.22.33'  
 
-    markup = types.InlineKeyboardMarkup(row_width=3)
-    btn1 = types.InlineKeyboardButton("💳 Картой", callback_data='creditcard')
-    btn2 = types.InlineKeyboardButton("🏵 Криптой", callback_data='cryptcoin')
-    btn3 = types.InlineKeyboardButton("⭐️ ТГ звёздами", callback_data='tgstars')
-    markup.add(btn1, btn2, btn3)
+    markup = types.InlineKeyboardMarkup([
+        [
+            types.InlineKeyboardButton("💳 Картой", callback_data='creditcard'),
+            types.InlineKeyboardButton("🏵 Криптой", callback_data='cryptcoin'),
+            types.InlineKeyboardButton("⭐️ ТГ звёздами", callback_data='tgstars')
+        ],
+        [
+            types.InlineKeyboardButton("📇 Реферальная программа", callback_data='referral')
+        ]
+    ])
 
-    bot.send_message(userid, "Информация об оплате...", reply_markup=markup)
+    bot.send_message(userid, text, reply_markup=markup)
+
+
+def referral_handler(tguserid, callid):
+    bot.answer_callback_query(callid, "Выбрана реферрвльная прогграмма")
+    # получить ник моего реферала
+    user = session.query(User).filter(User.tele_id == tguserid).first()
+    nick_name = user.get_refnick()
+    # TODO получить число моих рефералов
+    ref_count = user.get_refcount()
+    # TODO показать сколько закинули все рефералы
+    money_get = 0
+    # показать мою реф. ссылку
+    reflink = user.get_reflink()
+    text = f'Меня привёл: {nick_name}\n' + \
+           f'Моих реферралов: {ref_count}\n' + \
+           'Получено от реферралов: тугрики\n' + \
+           f'Моя реферральная ссылка: {reflink}'
+
+    bot.send_message(tguserid, text)
+
 
 def about_handler(userid, callid):
     bot.answer_callback_query(callid, "Вы выбрали О боте")
@@ -129,6 +169,7 @@ def about_handler(userid, callid):
     markup.add(btn1, btn2, btn3)
 
     bot.send_message(userid, "Информация о боте...", reply_markup=markup)
+
 
 def category_handler(userid, callid):
     bot.answer_callback_query(callid, 'Выбранo Категории')
@@ -158,21 +199,16 @@ def tgstars_handler(userid, callid):
     bot.send_message(userid, 'Этот функционал ещё разрабатывается.')
 
 
+def get_referral_id_by_reflink(reflink: str):
+    referral = session.query(Referral).filter(Referral.reflink == reflink).first()
+    if referral:
+        user = session.query(User).filter(User.id == referral.id).first()
+        return referral.id, user.name
+    else:
+        return None
 
 
 ### OLD CODE ###
-
-@bot.message_handler(commands=['wrk', 'list', 'cmd'])
-def handle_list(message):
-    if message.chat.id < 0:
-        bot.send_message(message.chat.id, 'Please use private messages')
-        return
-    text = '\U0001f1f7\U0001f1fa /freelansim -- Last job from freelansim.ru\n'+\
-           '\U0001f1f7\U0001f1fa /freelancehunt -- Last job from freelansim.ru\n'+\
-           '\U0001f1fa\U0001f1f8 /freelancecom -- Last job from freelance.com'
-
-    bot.send_message(message.chat.id, text)
-
 @bot.message_handler(commands=['stats', 'st'])
 def handle_stats(message):
     
@@ -190,184 +226,6 @@ def handle_stats(message):
     bot.send_message(message.chat.id, text, parse_mode='MARKDOWN')
 
 
-@bot.message_handler(commands=['freelancecom', 'fc'])
-def handle_freelancecom(message):
-    if message.chat.id < 0:
-        bot.send_message(message.chat.id, 'Please use private messages')
-        return
-    output = '\u2328 /freelance_adm - Last jobs for sysadmins\n'+\
-             '\u2692 /freelance_webdev - Last jobs for Web Developers\n'+\
-             '\U0001f307 /freelance_webdis - Last jobs for Web Designers\n'+\
-             '\U0001f6e0 /freelance_dev - Last jobs for Developers'
-    bot.send_message(message.chat.id, output)
-
-@bot.message_handler(commands=['freelansim', 'fr'])
-def handle_freelansim(message):
-    if message.chat.id < 0:
-        bot.send_message(message.chat.id, 'Please use private messages')
-        return
-    output = '\u2328 /freelansim_adm - Last jobs for sysadmins\n'+\
-             '\u2692 /freelansim_webdev - Last jobs for Web Developers\n'+\
-             '\U0001f307 /freelansim_webdis - Last jobs for Web Designers\n'+\
-             '\U0001f6e0 /freelansim_dev - Last jobs for Developers'
-    bot.send_message(message.chat.id, output)
-
-@bot.message_handler(commands=['freelancehunt', 'fch'])
-def handle_freelancehunt(message):
-    if message.chat.id < 0:
-        bot.send_message(message.chat.id, 'Please use private messages')
-        return
-    output = '\u2328 /freelancehunt_adm - Last jobs for sysadmins\n'+\
-             '\u2692 /freelancehunt_webdev - Last jobs for Web Developers\n'+\
-             '\U0001f307 /freelancehunt_webdis - Last jobs for Web Designers\n'+\
-             '\U0001f6e0 /freelancehunt_dev - Last jobs for Developers'
-    bot.send_message(message.chat.id, output)
-
-
-@bot.message_handler(commands=['freelansim_adm', 'fra'])
-def handle_freelansim_adm(msg):
-    send_jobs('freelansim', 'admin', msg.chat.id)
-
-@bot.message_handler(commands=['freelansim_webdev', 'frw'])
-def handle_freelansim_webdev(msg):
-    send_jobs('freelansim', 'webdev', msg.chat.id)
-
-@bot.message_handler(commands=['freelansim_webdis', 'frwd'])
-def handle_freelansim_webdis(msg):
-    send_jobs('freelansim', 'webdis', msg.chat.id)
-
-@bot.message_handler(commands=['freelansim_dev', 'frd'])
-def handle_freelansim_dev(msg):
-    send_jobs('freelansim', 'dev', msg.chat.id)
-
-@bot.message_handler(commands=['freelance_adm', 'fca'])
-def handle_freelansim_adm(msg):
-    send_jobs('freelance.com', 'admin', msg.chat.id)
-
-@bot.message_handler(commands=['freelance_webdev', 'fcw'])
-def handle_freelance_webdev(msg):
-    send_jobs('freelance', 'webdev', msg.chat.id)
-
-@bot.message_handler(commands=['freelance_webdis', 'fcwd'])
-def handle_freelance_webdis(msg):
-    send_jobs('freelance', 'webdis', msg.chat.id)
-
-@bot.message_handler(commands=['freelance_dev', 'fcd'])
-def handle_freelance_dev(msg):
-    send_jobs('freelance', 'dev', msg.chat.id)
-
-@bot.message_handler(commands=['freelancehunt_adm', 'fcha'])
-def handle_freelancehunt_dev(msg):
-    send_jobs('freelancehunt', 'admin', msg.chat.id)
-
-@bot.message_handler(commands=['freelancehunt_webdev', 'fchw'])
-def handle_freelancehunt_dev(msg):
-    send_jobs('freelancehunt', 'webdev', msg.chat.id)
-
-@bot.message_handler(commands=['freelancehunt_webdis', 'fchwd'])
-def handle_freelancehunt_dev(msg):
-    send_jobs('freelancehunt', 'webdis', msg.chat.id)
-
-@bot.message_handler(commands=['freelancehunt_dev', 'fchd'])
-def handle_freelancehunt_dev(msg):
-    send_jobs('freelancehunt', 'dev', msg.chat.id)
-
-@bot.message_handler(commands=['subscribe_adm', 'sa'])
-def handle_admin_subscribe(message):
-    # if user doesn't exist
-    if not user_exist(message.from_user.id):
-        Subscription().add_new(message.from_user.username, message.from_user.id, 'admin', session)
-    else: # else update existing subscription
-        try:
-            Subscription().update(message.from_user.id, 'admin', session)
-            session.commit()
-        except:
-            session.rollback()
-            raise
-        finally:
-            session.close()
-
-    output = 'Chat ID: ' + str(message.chat.id) + \
-             '\nUser ID: ' + str(message.from_user.id) + \
-             '\nNick: ' + str(message.from_user.username) + \
-             '\nLast JOB ID in this category: ' + str(get_last_job('admin')) + \
-             '\n*You subscribed on Administration category*'
-    bot.send_message(message.chat.id, output)
-
-@bot.message_handler(commands=['subscribe_dev', 'sd'])
-def handle_develop_subscribe(message):
-    # if user doesn't exist
-    if not user_exist(message.from_user.id):
-        Subscription().add_new(message.from_user.username, message.from_user.id, 'dev', session)
-    else: # else update existing subscription
-        try:
-            Subscription().update(message.from_user.id, 'dev', session)
-            session.commit()
-        except:
-            session.rollback()
-            raise
-        finally:
-            session.close()
-
-    output = 'Chat ID: ' + str(message.chat.id) + \
-             '\nUser ID: ' + str(message.from_user.id) + \
-             '\nNick: ' + str(message.from_user.username) + \
-             '\nLast JOB ID in this category: ' + str(get_last_job('dev')) + \
-             '\nYou subscribed on Development category'
-    bot.send_message(message.chat.id, output)
-
-@bot.message_handler(commands=['subscribe_webdev', 'swd'])
-def handle_webdevelop_subscribe(message):
-    # if user doesn't exist
-    if not user_exist(message.from_user.id):
-        Subscription().add_new(message.from_user.username, message.from_user.id, 'webdev', session)
-    else: # else update existing subscription
-        try:
-            Subscription().update(message.from_user.id, 'webdev', session)
-            session.commit()
-        except:
-            session.rollback()
-            raise
-        finally:
-            session.close()
-
-    output = 'Chat ID: ' + str(message.chat.id) + \
-             '\nUser ID: ' + str(message.from_user.id) + \
-             '\nNick: ' + str(message.from_user.username) + \
-             '\nLast JOB ID in this category: ' + str(get_last_job('webdev')) + \
-             '\nYou subscribed on Web Development category'
-    bot.send_message(message.chat.id, output)
-
-@bot.message_handler(commands=['subscribe_webdis', 'swds'])
-def handle_webdesign_subscribe(message):
-    # if user doesn't exist
-    if not user_exist(message.from_user.id):
-        Subscription().add_new(message.from_user.username, message.from_user.id, 'webdis', session)
-    else: # else update existing subscription
-        try:
-            Subscription().update(message.from_user.id, 'webdis', session)
-            session.commit()
-        except:
-            session.rollback()
-            raise
-        finally:
-            session.close()
-
-    output = 'Chat ID: ' + str(message.chat.id) + \
-             '\nUser ID: ' + str(message.from_user.id) + \
-             '\nNick: ' + str(message.from_user.username) + \
-             '\nLast JOB ID in this category: ' + str(get_last_job('webdis')) + \
-             '\nYou subscribed on Web Design category'
-    bot.send_message(message.chat.id, output)
-
-@bot.message_handler(content_types=["text"])
-def repeat_all_messages(message):  # Название функции не играет никакой роли, в принципе
-    print(message.chat.id)
-    print(message)
-    if not message.chat.id == config.freelance_chan_id:
-        text = str(message.chat.id) + '\n' + message.text
-        bot.send_message(message.chat.id, text)
-
 #####################################################################
 def user_exist(user_id):
     cur = session.execute(text("SELECT id FROM users WHERE tele_id = '{}'".format(user_id)))
@@ -380,29 +238,6 @@ def user_exist(user_id):
     except TypeError: # if not in DB
         return False
 
-class Subscription(object):
-    def add_new(self, user_name, tele_id, category, session):
-        # add new subscription
-        user_row = User(name=user_name,
-                        tele_id=tele_id,
-                        last_job=get_last_job(category),
-                        category=category)
-        session.add(user_row)
-        session.commit()
-
-    def update(self, tele_id, category, session):
-        session.query(User).\
-            filter(User.tele_id == tele_id).\
-            update({"last_job": get_last_job(category),
-                    "category": category})
-
-def get_last_job(category):
-    cur = session.execute("SELECT id \
-                           FROM job \
-                           WHERE category = '{}' \
-                           ORDER BY id DESC \
-                           LIMIT 1".format(category))
-    return cur.fetchone()[0]
 
 def send_jobs(site, category, user_id):
     output = fetch_jobs(site, category)
@@ -441,11 +276,15 @@ def fetch_jobs(site, category):
 
 if __name__ == '__main__':
 
+    from IPython import embed
+
     while True:
         print("ParceLancer Started")
         try:
             bot.polling(none_stop=True)
         except Exception as e:
+            print(e.with_traceback(True))
             print(f'Сломался: {e} : {e.__cause__}')
+            #embed()
 
         time.sleep(1)
