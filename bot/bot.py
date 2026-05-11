@@ -17,8 +17,10 @@ from get_stats import get_stats_by, get_stats_subscribers
 
 # Обработчик команд '/start' и '/help'.
 @bot.message_handler(commands=['start', 'help'])
-def handle_start_help(message):
+def handle_start_help(message, callid=None):
     print(f'Have new user? {message.chat.id}')
+    if callid:
+        bot.answer_callback_query(callid, "Вы выбрали Меню")
     ref_id = 0 # Если рефералов нет
     try:
         reflink = message.text.split('/start ')[1]
@@ -27,7 +29,8 @@ def handle_start_help(message):
         print(f'ID: {ref_id}')
         start_text = f'Похоже ты пришёл от {ref_name}.\n'
     except Exception as e:
-        start_text = f'Мы уже познакомились\n'
+        #start_text = f'Мы уже познакомились\n'
+        start_text = f'Рад приветствовать тебя вновь, дорогой фрилансер. 🙏\n'
 
     # Проверить что юзер новый.
     if user_exist(message.chat.id):
@@ -88,6 +91,8 @@ def handle_support_reply(message):
 def handle_callback(call):
     if call.data == 'subscriptions':
         subscriptions_handler(call.message.chat.id, call.id)
+    elif call.data == 'menu':
+        handle_start_help(call.message, call.id) 
     elif call.data == 'payment':
         payments_handler(call.message.chat.id, call.id)
     elif call.data == 'payweek':
@@ -112,15 +117,35 @@ def handle_callback(call):
         tgstars_handler(call.message.chat.id, call.id)
     elif call.data == 'referral':
         referral_handler(call.message.chat.id, call.id)
+    elif call.data == 'dev':
+        sub_dev_handler(call.message.chat.id, call.id)
+    elif call.data == 'webdev':
+        sub_webdev_handler(call.message.chat.id, call.id)
+    elif call.data == 'admin':
+        sub_admin_handler(call.message.chat.id, call.id)
+    elif call.data == 'infosec':
+        sub_infosec_handler(call.message.chat.id, call.id)
+    elif call.data == 'qa':
+        sub_qa_handler(call.message.chat.id, call.id)
+    elif call.data == 'wrining':
+        sub_writing_handler(call.message.chat.id, call.id)
+    elif call.data == 'design':
+        sub_design_handler(call.message.chat.id, call.id)
+    elif call.data == 'webdis':
+        sub_webdis_handler(call.message.chat.id, call.id)
 
 
 def subscriptions_handler(userid, callid):
     bot.answer_callback_query(callid, "Вы выбрали Подписки")
 
-    markup = types.InlineKeyboardMarkup(row_width=2)
-    btn1 = types.InlineKeyboardButton("📂 Выбрать категории", callback_data='category')
-    btn2 = types.InlineKeyboardButton("🏢 Выбрать биржи", callback_data='jobcenter')
-    markup.add(btn1, btn2)
+    btns = [[ types.InlineKeyboardButton("📂 Выбрать категории", callback_data='category'),
+             types.InlineKeyboardButton("🏢 Выбрать биржи", callback_data='jobcenter')
+    ]]
+    btns.extend([[
+        types.InlineKeyboardButton("⬅️ Назад", callback_data='menu'),
+        types.InlineKeyboardButton("💳 Меню", callback_data='menu')
+    ]])
+    markup = types.InlineKeyboardMarkup(btns)
 
     bot.send_message(userid, "Информация о подписках...", reply_markup=markup)
 
@@ -137,41 +162,38 @@ def payments_handler(userid, callid):
            f'Баланс: {bill.money_count} ➿ фланков\n' + \
            f'Оплачено до: {payed_till}'  
 
-    if bill.payed_till.astimezone(timezone.utc) < datetime.now(timezone.utc):
-        markup = types.InlineKeyboardMarkup([
+    markup_list = [
             [
                 types.InlineKeyboardButton("💳 Картой", callback_data='creditcard'),
                 types.InlineKeyboardButton("🏵 Криптой", callback_data='cryptcoin'),
                 types.InlineKeyboardButton("⭐️ ТГ звёздами", callback_data='tgstars')
-            ],
+            ]]
+    if bill.payed_till.astimezone(timezone.utc) < datetime.now(timezone.utc):
+        markup_list.extend([
             [
                 types.InlineKeyboardButton("--- Выберите подписку: ---", callback_data=' ')
             ],
             [
-                types.InlineKeyboardButton("На неделю", callback_data='payweek'),
-                types.InlineKeyboardButton("На месяц", callback_data='paymonth'),
-                types.InlineKeyboardButton("На год", callback_data='payyear')
-            ],
-            [
-                types.InlineKeyboardButton("📇 Реферальная программа", callback_data='referral')
+                types.InlineKeyboardButton("На неделю (➿ 7)", callback_data='payweek'),
+                types.InlineKeyboardButton("На месяц (➿ 25)", callback_data='paymonth'),
+                types.InlineKeyboardButton("На год (➿ 350)", callback_data='payyear')
             ]
         ])
     else:
         print('DOESNT NEED TO PAY')
         print(f'{bill.payed_till.astimezone(timezone.utc)} < {datetime.now(timezone.utc)}')
-        
 
-        markup = types.InlineKeyboardMarkup([
-            [
-                types.InlineKeyboardButton("💳 Картой", callback_data='creditcard'),
-                types.InlineKeyboardButton("🏵 Криптой", callback_data='cryptcoin'),
-                types.InlineKeyboardButton("⭐️ ТГ звёздами", callback_data='tgstars')
-            ],
+    markup_list.extend([
             [
                 types.InlineKeyboardButton("📇 Реферальная программа", callback_data='referral')
+            ],
+            [
+                types.InlineKeyboardButton("⬅️ Назад", callback_data='menu'),
+                types.InlineKeyboardButton("💳 Меню", callback_data='menu'),
             ]
-        ])
+    ])
 
+    markup = types.InlineKeyboardMarkup(markup_list)
     bot.send_message(userid, text, reply_markup=markup)
 
 def payweek_handler(userid, callid):
@@ -186,8 +208,9 @@ def paymonth_handler(userid, callid):
 
 def payyear_handler(userid, callid):
     bot.answer_callback_query(callid, "Приобретаю год премиума")
-    Bill().payyear(userid)
+    Bill().payyear(userid.id)
     payments_handler(userid, callid)
+
 def referral_handler(tguserid, callid):
     bot.answer_callback_query(callid, "Выбрана реферрвльная прогграмма")
     # получить ник моего реферала
@@ -225,9 +248,61 @@ def about_handler(userid, callid):
     bot.send_message(userid, "Информация о боте...", reply_markup=markup)
 
 
-def category_handler(userid, callid):
+def category_handler(tguserid, callid):
     bot.answer_callback_query(callid, 'Выбранo Категории')
-    bot.send_message(userid, 'Выберите подходящую категорию работ, о которых хтите узнавать первым.')
+    print(tguserid)
+    user = session.query(User).filter(User.tele_id == tguserid).first()
+    print(user.id)
+    all_cats = []
+    for cat in user.get_categories():
+        all_cats.append(cat[0])
+
+    if 'dev' in all_cats:
+        l1 = [types.InlineKeyboardButton('+Development', callback_data='dev')]
+    else:
+        l1 = [types.InlineKeyboardButton('-Development', callback_data='dev')]
+
+    if 'webdev' in all_cats:
+        l1.append(types.InlineKeyboardButton('+Web Development', callback_data='webdev'))
+    else:
+        l1.append(types.InlineKeyboardButton('-Web Development', callback_data='webdev'))
+
+    if 'admin' in all_cats:
+        l1.append(types.InlineKeyboardButton('+Admin', callback_data='admin'))
+    else:
+        l1.append(types.InlineKeyboardButton('-Admin', callback_data='admin'))
+
+    if 'infosec' in all_cats:
+        l1.append(types.InlineKeyboardButton('+InfoSec', callback_data='infosec'))
+    else:
+        l1.append(types.InlineKeyboardButton('-InfoSec', callback_data='infosec'))
+        
+    if 'qa' in all_cats:
+        l2 = [types.InlineKeyboardButton('+Q & A', callback_data='qa')]
+    else:
+        l2 = [types.InlineKeyboardButton('-Q & A', callback_data='qa')]
+
+    if 'writing' in all_cats:
+        l2.append(types.InlineKeyboardButton('+Writing', callback_data='writing'))
+    else:
+        l2.append(types.InlineKeyboardButton('-Writing', callback_data='writing'))
+
+    if 'design' in all_cats:
+        l2.append(types.InlineKeyboardButton('+Design', callback_data='design'))
+    else:
+        l2.append(types.InlineKeyboardButton('-Design', callback_data='design'))
+
+    if 'webdis' in all_cats:
+        l2.append(types.InlineKeyboardButton('+Web Design', callback_data='webdis'))
+    else:
+        l2.append(types.InlineKeyboardButton('-Web Design', callback_data='webdis'))
+
+    l3 = [
+        types.InlineKeyboardButton("⬅️ Назад", callback_data='subscriptions'),
+        types.InlineKeyboardButton("💳 Меню", callback_data='menu')
+    ]
+    markup = types.InlineKeyboardMarkup([l1, l2, l3])
+    bot.send_message(tguserid, 'Выберите подходящую категорию работ, о которых хотите узнавать первым.', reply_markup=markup)
 
 def jobcenter_handler(userid, callid):
     bot.answer_callback_query(callid, 'Выбрана Обратная связь')
@@ -261,6 +336,69 @@ def get_referral_id_by_reflink(reflink: str):
     else:
         return None
 
+def sub_dev_handler(tguserid, callid):
+    bot.answer_callback_query(callid, "Вы Подписались на Development")
+
+    user = session.query(User).filter(User.tele_id == tguserid).first()
+    user.update_subscriptions('dev')
+
+    category_handler(tguserid, callid)
+
+def sub_webdev_handler(tguserid, callid):
+    bot.answer_callback_query(callid, "Вы Подписались на Web Development")
+
+    user = session.query(User).filter(User.tele_id == tguserid).first()
+    user.update_subscriptions('webdev')
+
+    category_handler(tguserid, callid)
+
+def sub_admin_handler(tguserid, callid):
+    bot.answer_callback_query(callid, "Вы Подписались на Administration")
+
+    user = session.query(User).filter(User.tele_id == tguserid).first()
+    user.update_subscriptions('admin')
+
+    category_handler(tguserid, callid)
+
+def sub_infosec_handler(tguserid, callid):
+    bot.answer_callback_query(callid, "Вы Подписались на InfoSec")
+
+    user = session.query(User).filter(User.tele_id == tguserid).first()
+    user.update_subscriptions('infosec')
+
+    category_handler(tguserid, callid)
+
+def sub_qa_handler(tguserid, callid):
+    bot.answer_callback_query(callid, "Вы Подписались на Q & A")
+
+    user = session.query(User).filter(User.tele_id == tguserid).first()
+    user.update_subscriptions('qa')
+
+    category_handler(tguserid, callid)
+
+def sub_writing_handler(tguserid, callid):
+    bot.answer_callback_query(callid, "Вы Подписались на CopyWriting")
+
+    user = session.query(User).filter(User.tele_id == tguserid).first()
+    user.update_subscriptions('writing')
+
+    category_handler(tguserid, callid)
+
+def sub_design_handler(tguserid, callid):
+    bot.answer_callback_query(callid, "Вы Подписались на Design")
+
+    user = session.query(User).filter(User.tele_id == tguserid).first()
+    user.update_subscriptions('design')
+
+    category_handler(tguserid, callid)
+
+def sub_webdis_handler(tguserid, callid):
+    bot.answer_callback_query(callid, "Вы Подписались на Web Design")
+
+    user = session.query(User).filter(User.tele_id == tguserid).first()
+    user.update_subscriptions('webdis')
+
+    category_handler(tguserid, callid)
 
 ### OLD CODE ###
 @bot.message_handler(commands=['stats', 'st'])
@@ -287,7 +425,8 @@ def user_exist(user_id):
         output = 'Checked ID: {} \
                  \nExisted User ID: {} \
                  \n__DEBUG__ __MESSAGE__'.format(user_id, cur.fetchone()[0])
-        bot.send_message(user_id, output)
+        # Fetch but send only if DEBUG
+       # bot.send_message(user_id, output)
         return True
     except TypeError: # if not in DB
         return False

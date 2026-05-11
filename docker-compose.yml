@@ -4,6 +4,7 @@ services:
     volumes:
       - /opt/parselancer/:/workdir/
     command: bash -c "sleep 100001"
+    stop_grace_period: 1s
     restart: always
 
   parser:
@@ -26,6 +27,6 @@ services:
   bot:
     extends:
       service: template_srvc
-    command: bash -c "python bot/bot.py"
+    command: python bot/bot.py
     restart: always
 
