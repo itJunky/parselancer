@@ -1,8 +1,11 @@
 services:
   template_srvc:
     build: .
+    user: "${CURRENT_UID}:${CURRENT_GID}"
+    environment:
+      - PYTHONPATH=/workdir
     volumes:
-      - /opt/parselancer/:/workdir/
+      - ./:/workdir/
     command: bash -c "sleep 100001"
     stop_grace_period: 1s
     restart: always
