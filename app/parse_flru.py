@@ -1,4 +1,5 @@
 import requests
+import argparse
 from bs4 import BeautifulSoup
 
 from datetime import datetime
@@ -6,6 +7,11 @@ from db import *
 from common import job_exist
 
 from sqlalchemy.orm import sessionmaker
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-q', '--quiet', action='store_true', help='Suppress output')
+args = parser.parse_args()
+
 Session = sessionmaker(bind=engine)
 session = Session()
 
@@ -45,73 +51,51 @@ def parse_fl_projects(url, category):
         projects = soup.find_all('div', class_='b-post__grid')
         
         if not projects:
-            print(f"Не удалось найти проекты на странице: {url}")
+            if not args.quiet:
+                print(f"[{category}] No projects found: {url}")
             return
+
+        if not args.quiet:
+            print(f"[{category}] Found {len(projects)} jobs on page")
         
         for project in projects:
-            t = project.find_all('h2')[0]
-            title = t.find('a').text  ### title here !!!
-            link = t.find('a')['href']
-            descr_raw = project.find_all('script')
-            for descr in descr_raw:
-                sc_content = descr.string
-                inner_html = sc_content.split("document.write('")[-1].split("');")[0]
-                inner_soup = BeautifulSoup(inner_html, 'html.parser')
-                
+            t = project.find('h2')
+            if not t:
+                continue
+            a = t.find('a')
+            if not a:
+                continue
+            title = a.text.strip()
+            link = a['href']
 
-                span_raw = inner_soup.find('span')
-                price = []
-                if span_raw:
-                    for span in span_raw:
-                        price.append(span.text)
-                        if len(price) > 1: break
-                    break # stop looking price
+            price_span = project.find('span', class_='text-4')
+            cost = price_span.get_text(strip=True) if price_span else None
 
-            for descr in descr_raw:
-                sc_content = descr.string
-                inner_html = sc_content.split("document.write('")[-1].split("');")[0]
-                inner_soup = BeautifulSoup(inner_html, 'html.parser')
-                
-                div_raw = inner_soup.find_all('div')[0]
-                if div_raw:
-                    div_raw2 = div_raw.find_all('div')
-                    if not div_raw2: continue
+            descr_div = project.find('div', class_='text-5')
+            description = descr_div.get_text(strip=True) if descr_div else ''
 
-                    div_text = div_raw2[0].text
-                    if len(div_text) > 2:
-                        description = div_raw2[0].text
-                        break
-
-            
-            # Пытаемся найти стоимость (может быть не у всех проектов)
-            try:
-                cost = str(price[0] + price[1])
-            except:
-                cost = str(price[0])
-            
-            if job_exist(link): continue # skip to next url
+            if job_exist(link):
+                continue
 
             job_row = Job(
-                title = title,
-                date = datetime.now(), # TODO спарсить дату публикации
-                price = cost,
-                url = main_url + link,
-                category = category,
-                parse_date = datetime.now(),
-                description = description
+                title=title,
+                date=datetime.now(),
+                price=cost,
+                url=main_url + link,
+                category=category,
+                parse_date=datetime.now(),
+                description=description
             )
             session.add(job_row)
             session.commit()
 
-            print(f"Название: {title}")
-            print(f"Описание: {description}")
-            print(f"Стоимость: {cost}")
-            print(main_url+link)
-            print("-" * 50)
+            if not args.quiet:
+                print(f"  + {title} | {cost} | {main_url + link}")
             #return
             
     except requests.RequestException as e:
-        print(f"Ошибка при запросе к сайту: {e}")
+        if not args.quiet:
+            print(f"[{category}] Request error: {e}")
 #    except Exception as e:
 #        print(f"Произошла ошибка: {e}")
 
