@@ -4,10 +4,11 @@ WORKDIR /workdir
 #COPY . /workdir
 COPY ./requirements.txt .
 RUN pip install -r requirements.txt
-RUN useradd -u 1001 -m bot 
-RUN apt-get update && apt-get -y install busybox openssh-client
-#RUN apt-get update && apt-get -y install cron && \
-#    touch /var/log/cron.log && touch /var/run/crond.pid && chown bot /var/run/crond.pid
+RUN apt-get update && apt-get -y install busybox openssh-client gosu \
+    && rm -rf /var/lib/apt/lists/*
 
-USER bot
-CMD ["python", "/workdir/run_parse.sh"]
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["bash", "-c", "sleep 100001"]

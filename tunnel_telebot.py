@@ -55,6 +55,9 @@ class SSHTunnelTeleBotAPI(object):
             "-o", "ServerAliveCountMax={0}".format(cfg.get("server_alive_count_max", 3)),
         ]
 
+        if cfg.get("known_hosts_file"):
+            cmd += ["-o", "UserKnownHostsFile={0}".format(cfg["known_hosts_file"])]
+
         if cfg.get("identity_file"):
             cmd += ["-i", cfg["identity_file"]]
 

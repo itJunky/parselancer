@@ -1,11 +1,13 @@
 services:
   template_srvc:
     build: .
-    user: "${CURRENT_UID}:${CURRENT_GID}"
     environment:
       - PYTHONPATH=/workdir
+      - CURRENT_UID=${CURRENT_UID}
+      - CURRENT_GID=${CURRENT_GID}
     volumes:
       - ./:/workdir/
+      - ~/.ssh_tun:/workdir/.ssh_tun:ro
     command: bash -c "sleep 100001"
     stop_grace_period: 1s
     restart: always
