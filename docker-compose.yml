@@ -3,6 +3,7 @@ services:
     build: .
     environment:
       - PYTHONPATH=/workdir
+      - PYTHONUNBUFFERED=1
       - CURRENT_UID=${CURRENT_UID}
       - CURRENT_GID=${CURRENT_GID}
     volumes:

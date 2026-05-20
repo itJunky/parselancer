@@ -9,6 +9,17 @@ import config
 
 bot = telebot.TeleBot(config.token_prod)
 
+try:
+    from tun_config import CONFIG
+    from tunnel_telebot import SSHTunnelTeleBotAPI
+    from telebot import apihelper
+    _tunnel = SSHTunnelTeleBotAPI(CONFIG)
+    _tunnel.start()
+    apihelper.proxy = {'http': _tunnel._build_proxy_url(), 'https': _tunnel._build_proxy_url()}
+    print("SSH tunnel started")
+except Exception as _e:
+    print(f"Tunnel not available, using direct connection: {_e}")
+
 from sqlalchemy import text
 from sqlalchemy.orm import sessionmaker, scoped_session
 session = scoped_session(sessionmaker(bind=engine))

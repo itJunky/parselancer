@@ -8,6 +8,16 @@ import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 bot = telebot.TeleBot(config.token_prod)
 
+try:
+    from tun_config import CONFIG
+    from tunnel_telebot import SSHTunnelTeleBotAPI
+    from telebot import apihelper
+    _tunnel = SSHTunnelTeleBotAPI(CONFIG)
+    _tunnel.start()
+    apihelper.proxy = {'http': _tunnel._build_proxy_url(), 'https': _tunnel._build_proxy_url()}
+except Exception as _e:
+    print(f"Tunnel not available: {_e}")
+
 from time import sleep, strftime
 from datetime import datetime
 
