@@ -1,5 +1,5 @@
 #!/bin/bash 
-set -x 
+#set -x 
 set -e
 
 PID=`ps -eo pid,etime,cmd | grep " ./app/parse_.*py" | grep -v grep | awk '{print $1}'`

@@ -5,7 +5,7 @@ WORKDIR /workdir
 COPY ./requirements.txt .
 RUN pip install -r requirements.txt
 RUN useradd -u 1001 -m bot 
-RUN apt-get update && apt-get -y install busybox
+RUN apt-get update && apt-get -y install busybox openssh-client
 #RUN apt-get update && apt-get -y install cron && \
 #    touch /var/log/cron.log && touch /var/run/crond.pid && chown bot /var/run/crond.pid
 

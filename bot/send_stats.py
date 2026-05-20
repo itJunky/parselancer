@@ -1,14 +1,18 @@
-from db import *
-import config
+from bot.db import *
+import bot.config
 import telebot
 
 from datetime import datetime, timedelta
 from sqlalchemy.orm import sessionmaker
 
+from tun_config import CONFIG
+from tunnel_telebot import SSHTunnelTeleBotAPI
+
 Session = sessionmaker(bind=engine)
 session = Session()
 
-bot = telebot.TeleBot(config.token)
+bot = telebot.TeleBot(bot.config.token_prod)
+tunnel = SSHTunnelTeleBotAPI(CONFIG)
 
 def job_is_newer_than_day(date):
     now = datetime.now()
@@ -60,8 +64,11 @@ msg_text = f'{jobs_count}\t работ собрано за всё время \n'
            f'{jh_guru}/{jd_guru} задач опубликовали за час/день на guru.com.\n'+\
            f'#stats #hourly'
 
-bot.send_message(-1001420206323, msg_text, parse_mode='HTML')
-#bot.send_message(6844185021, msg_text)
+
+with tunnel.wrap_api():
+    #bot.send_message(-1001420206323, msg_text, parse_mode='HTML')
+    bot.send_message(-1001345459769, msg_text, parse_mode='HTML')
+    #bot.send_message(6844185021, msg_text)
 
 print(f'Всего работ собрано: {jobs_count}')
 print(f'За последние сутки с фриланс бирж собрано задач: \t{jobs_at_this_day}')
