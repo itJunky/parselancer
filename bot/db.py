@@ -5,7 +5,10 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 
 Base = declarative_base()
 
-from bot.config import DB_PATH
+try:
+    from config import DB_PATH
+except ImportError:
+    from bot.config import DB_PATH
 
 import random
 import string
