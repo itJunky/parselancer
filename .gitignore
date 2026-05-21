@@ -6,3 +6,8 @@ jobs.db*
 backups/
 .env
 !.env.example
+bot/blog.py
+bot/rm_post.py
+bot/touch.py
+cronjob*
+mysql_tunnel.sh

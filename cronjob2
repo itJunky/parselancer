@@ -1,1 +1,0 @@
-54 * * * * python /workdir/bot/send_stats.py
