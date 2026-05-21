@@ -7,3 +7,4 @@ backups/
 app/config.py
 bot/config.py
 tun_config.py
+.env

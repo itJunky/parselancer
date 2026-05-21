@@ -8,7 +8,7 @@ services:
       - CURRENT_GID=${CURRENT_GID}
     volumes:
       - ./:/workdir/
-      - ~/.ssh_tun:/workdir/.ssh_tun
+      - ${SSH_TUN_DIR:-~/.ssh_tun}:/workdir/.ssh_tun
     command: bash -c "sleep 100001"
     stop_grace_period: 1s
     restart: always
