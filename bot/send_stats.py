@@ -32,6 +32,8 @@ jd_wbl = 0
 jh_wbl = 0
 jd_guru = 0
 jh_guru = 0
+jd_proz = 0
+jh_proz = 0
 
 jobs_count = session.query(Job).count()
 j = session.query(Job.id, Job.parse_date, Job.url).all()
@@ -45,6 +47,8 @@ for i in j:
             jd_wbl += 1
         if 'guru.com' in i[2]:
             jd_guru += 1
+        if 'translation-jobs' in i[2] or 'proz.com' in i[2]:
+            jd_proz += 1
     if job_is_newer_than_hour(i[1]):
         jobs_at_this_hour += 1
         if 'fl.ru' in i[2]:
@@ -53,6 +57,8 @@ for i in j:
             jh_wbl += 1
         if 'guru.com' in i[2]:
             jh_guru += 1
+        if 'translation-jobs' in i[2] or 'proz.com' in i[2]:
+            jh_proz += 1
 
 
 msg_text = f'{jobs_count}\t работ собрано за всё время \n' +\
@@ -61,7 +67,8 @@ msg_text = f'{jobs_count}\t работ собрано за всё время \n'
             '---\n' +\
            f'{jh_flru}/{jd_flru} задач опубликовали за час/день на fl.ru.\n' +\
            f'{jh_wbl}/{jd_wbl} задач опубликовали за час/день на weblancer.net.\n' +\
-           f'{jh_guru}/{jd_guru} задач опубликовали за час/день на guru.com.\n'+\
+           f'{jh_guru}/{jd_guru} задач опубликовали за час/день на guru.com.\n' +\
+           f'{jh_proz}/{jd_proz} задач опубликовали за час/день на proz.com.\n'+\
            f'#stats #hourly'
 
 
@@ -77,3 +84,4 @@ print('-' * 30)
 print(f'fl.ru опубликовало за день \t\t{jd_flru} \tи за час {jh_flru} работ.')
 print(f'weblancer.net опубликовал за день \t{jd_wbl} \tи за час {jh_wbl} работ.')
 print(f'guru.com опубликовал за день \t\t{jd_guru} \tи за час {jh_guru} работ.')
+print(f'proz.com опубликовал за день \t\t{jd_proz} \tи за час {jh_proz} работ.')
