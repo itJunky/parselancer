@@ -23,3 +23,6 @@ CONFIG = {
         "server_alive_count_max": 3,
     },
 }
+
+# Logging
+QUIET = os.environ.get('QUIET', '0') == '1'

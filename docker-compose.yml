@@ -17,6 +17,7 @@ services:
       - SSH_IDENTITY_FILE=${SSH_IDENTITY_FILE:-/workdir/.ssh_tun/id_ed25519}
       - SSH_KNOWN_HOSTS=${SSH_KNOWN_HOSTS:-/workdir/.ssh_tun/known_hosts}
       - SSH_LOCAL_SOCKS_PORT=${SSH_LOCAL_SOCKS_PORT:-2080}
+      - QUIET=${QUIET:-0}
     volumes:
       - ./:/workdir/
       - ${SSH_TUN_DIR:-~/.ssh_tun}:/workdir/.ssh_tun

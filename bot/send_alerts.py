@@ -3,6 +3,7 @@
 import json
 import html
 import config
+from config import QUIET
 import sqlalchemy
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
@@ -20,6 +21,8 @@ except Exception as _e:
 
 from time import sleep, strftime
 from datetime import datetime
+
+print(f'=== Sender started at {datetime.now().strftime("%Y-%m-%d %H:%M:%S")} ===')
 
 from db import *
 from sqlalchemy.orm import sessionmaker, scoped_session
@@ -55,11 +58,12 @@ for user in users:
         # Проверить появилась ли в его категории более новая работа
         if int(last_job) < last_job_in_category:
 
-            print('\nNAME:\t\t', user.name)
-            print('ID:\t\t', user.tele_id)
-            print('LAST JOB\t', last_job)
-            print('CATEGORY:\t', category)
-            print('LAST IN CATEGORY', last_job_in_category)
+            if not QUIET:
+                print('\nNAME:\t\t', user.name)
+                print('ID:\t\t', user.tele_id)
+                print('LAST JOB\t', last_job)
+                print('CATEGORY:\t', category)
+                print('LAST IN CATEGORY', last_job_in_category)
 
             # Если в категории появилась новая работа, то отправить юзеру её
             if category == 'all':
@@ -108,7 +112,7 @@ for user in users:
                 markup.add(InlineKeyboardButton("🌐 Подробнее", url=job.url.strip()))
  
                 try: # Отправить работу юзеру
-                    print(f'DEBUG: User id - {user.tele_id}')
+                    print(f'Sending to {user.name} ({user.tele_id})')
                     bot.send_message(user.tele_id, job_text, parse_mode='HTML', reply_markup=markup, disable_web_page_preview=True)
                     print(job_text)
                 except telebot.apihelper.ApiException as e:

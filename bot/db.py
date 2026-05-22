@@ -6,9 +6,9 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 Base = declarative_base()
 
 try:
-    from config import DB_PATH
+    from config import DB_PATH, QUIET
 except ImportError:
-    from bot.config import DB_PATH
+    from bot.config import DB_PATH, QUIET
 
 import random
 import string
@@ -66,26 +66,19 @@ class User(Base):
         return len(all_refs)
 
     def get_categories(self):
-        text = f'DEBUG: Categories for: {self.tele_id} - '
         subs = []
         all_subs = session.query(Subscription).filter(Subscription.user_id == self.tele_id).all()
         for sub in all_subs:
             subs.append([sub.category, sub.last_job])
-        text += f'{subs}'
-        print(text)
+        if not QUIET:
+            print(f'DEBUG: Categories for: {self.tele_id} - {subs}')
         return subs
 
     def update_last_job(self, category, job_id):
-        text = f'DEBUG: Update last job {job_id} in category {category} - '
-        sub = session.query(Subscription).filter(Subscription.category == category, 
+        sub = session.query(Subscription).filter(Subscription.category == category,
                                                  Subscription.user_id == self.tele_id).first()
-        if sub:
-            text += 'Ok'
-        else:
-            text += 'Fail\n'
-            text += sub
-
-        print(text)
+        if not QUIET:
+            print(f'DEBUG: Update last job {job_id} in category {category} - {"Ok" if sub else "Fail"}')
         sub.last_job = job_id
 
         sended = False
@@ -98,43 +91,29 @@ class User(Base):
 
     def update_subscriptions(self, category):
         all_cats = self.get_categories()
-        print(all_cats)
-        cats = []
-        for cat in all_cats:
-            cats.append(cat[0])
-        print(cats)
+        cats = [cat[0] for cat in all_cats]
 
-        print(f'DEBUG: Category {category} check in {cats}')
+        if not QUIET:
+            print(f'DEBUG: Category {category} check in {cats}')
         if category in cats:
-            print('DEBUG: Already have this subs')
-            # TODO отписка
+            if not QUIET:
+                print('DEBUG: Already have this subs')
             self.unsubscribe(category)
         elif 'TESTSUBS' in cats:
-            print('DEBUG TESTSUBS')
             stmt = select(Job).order_by(Job.id.desc()).limit(1)
             sub_last = session.scalars(stmt).first()
-            print(f'Last id: {sub_last.id}')
 
             sub_test = session.query(Subscription).filter(Subscription.user_id == self.tele_id,
                                                          Subscription.category == 'TESTSUBS').first()
             sub = session.get(Subscription, [sub_test.id, self.tele_id])
-            print(sub.id)
             sub.category = category
             sub.last_job = sub_last.id
-        #elif not category in cats:
-            #continue
-        #    pass
         else:
             stmt = select(Job).order_by(Job.id.desc()).limit(1)
             sub_last = session.scalars(stmt).first()
-                
-            sub = session.query(Subscription).first()
-            print('=============')
-            print(sub.id)
-            print(sub_last.id)
-            new_sub = Subscription(user_id = self.tele_id,
-                                   category = category,
-                                   last_job = sub_last.id)
+            new_sub = Subscription(user_id=self.tele_id,
+                                   category=category,
+                                   last_job=sub_last.id)
             session.add(new_sub)
 
         while True:
